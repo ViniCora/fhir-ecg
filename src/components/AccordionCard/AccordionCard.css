@@ -1,0 +1,13 @@
+.p-accordion-header .p-accordion-header-link {
+    padding: 0.25rem 0.75rem; /* Menos padding vertical */
+    font-size: 0.85rem;       /* Texto menor */
+}
+
+.accordion-container {
+
+    padding: 0.5rem;
+}
+
+.accordion-content {
+    padding: 0.5rem;
+}
