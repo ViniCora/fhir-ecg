@@ -1,23 +1,28 @@
-import React from 'react';
+
 import Plot from 'react-plotly.js';
 
-export default function ECGPlot({ data, samplingRate, maxHeight }) {
+interface ECGPlotProps {
+  data: number[];
+  samplingRate: number;
+  maxHeight?: number;
+}
+
+export default function ECGPlot({ data, samplingRate, maxHeight }: ECGPlotProps) {
   if (!data || data.length === 0) return <div>Carregando...</div>;
 
   const dataVoltagem = data;
-
   const time = data.map((_, i) => i / samplingRate);
 
   const yMin = Math.min(...dataVoltagem);
   const yMax = Math.max(...dataVoltagem);
   const margem = (yMax - yMin) * 0.1;
 
-   const shapes = [];
+  const shapes: Partial<Plotly.Shape>[] = [];
 
-  function isAlmostMultiple(value, step, epsilon = 1e-6) {
-    const mod = ((value % step) + step) % step;
-    return mod < epsilon || Math.abs(mod - step) < epsilon;
-  }
+  // function isAlmostMultiple(value: number, step: number, epsilon = 1e-6) {
+  //   const mod = ((value % step) + step) % step;
+  //   return mod < epsilon || Math.abs(mod - step) < epsilon;
+  // }
 
   // // Linhas horizontais
   // for (let y = yMin; y <= yMax; y += ySmallStep) {
@@ -53,7 +58,6 @@ export default function ECGPlot({ data, samplingRate, maxHeight }) {
   //   });
   // }
 
-
   return (
     <div style={{
       width: '95vw',
@@ -69,15 +73,14 @@ export default function ECGPlot({ data, samplingRate, maxHeight }) {
           y: dataVoltagem,
           type: 'scatter',
           mode: 'lines',
-          line: { color: 'black', width: 2 },
-          simplify: true,
+          line: { color: 'black', width: 2, simplify: true },
         }]}
         layout={{
           autosize: true,
           dragmode: 'pan',
           margin: { l: 40, r: 20, t: 20, b: 40 },
           xaxis: {
-            title: 'Tempo (s)',
+            title: { text: 'Tempo (s)' },
             showgrid: true,
             gridcolor: '#ff9999',
             gridwidth: 1,
@@ -87,7 +90,7 @@ export default function ECGPlot({ data, samplingRate, maxHeight }) {
             fixedrange: false,
           },
           yaxis: {
-            title: 'Voltagem (V)',
+            title: { text: 'Tensão (V)' },
             showgrid: true,
             gridcolor: '#ff9999',
             gridwidth: 1,
