@@ -1,0 +1,17 @@
+.dock-container {
+  display: flex;
+  flex-direction: row;
+  border: 1px solid #ccc;
+}
+
+.label { 
+  display: inline-block; 
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.label.vertical-upright {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.05em;
+}
