@@ -1,0 +1,542 @@
+{
+	"info": {
+		"_postman_id": "867a5ce0-77ff-4fc6-8964-5546e6ba5094",
+		"name": "FHIR-ECG",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9098742"
+	},
+	"item": [
+		{
+			"name": "GW H2Cloud",
+			"item": [
+				{
+					"name": "/.well-known/smart-configuration",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{if4health_url}}/.well-known/smart-configuration",
+							"host": [
+								"{{if4health_url}}"
+							],
+							"path": [
+								".well-known",
+								"smart-configuration"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200 - ok",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://if4health.charqueadas.ifsul.edu.br/healthgate/api/neoFassEcg/.well-known/smart-configuration",
+									"protocol": "https",
+									"host": [
+										"if4health",
+										"charqueadas",
+										"ifsul",
+										"edu",
+										"br"
+									],
+									"path": [
+										"healthgate",
+										"api",
+										"neoFassEcg",
+										".well-known",
+										"smart-configuration"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.18.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 24 May 2025 21:52:10 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "553"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"229-5QrIUCRDoNSyxaOoDfSWMdo21RY\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"authorization_endpoint\": \"https://if4health.charqueadas.ifsul.edu.br/biosignalinfhir/auth/register\",\n    \"token_endpoint\": \"https://if4health.charqueadas.ifsul.edu.br/biosignalinfhir/auth/token\",\n    \"token_endpoint_auth_methods_supported\": [\n        \"private_key_jwt\"\n    ],\n    \"grant_types_supported\": [\n        \"authorization_code\",\n        \"client_credentials\"\n    ],\n    \"scopes_supported\": [\n        \"patient/*.rs\"\n    ],\n    \"response_types_supported\": [\n        \"code\"\n    ],\n    \"capabilities\": [\n        \"client-confidential-asymmetric\"\n    ],\n    \"code_challenge_methods_supported\": [\n        \"S256\"\n    ],\n    \"token_endpoint_auth_signing_alg_values_supported\": [\n        \"RS384\",\n        \"ES384\"\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "/register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{if4health_url}}/auth/register?redirect_uri=/dashboard&scope=patient/*.rs&token_endpoint=/auth/token&client_id=adriano-utfpr&aud=asd&state=asd",
+							"host": [
+								"{{if4health_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							],
+							"query": [
+								{
+									"key": "redirect_uri",
+									"value": "/dashboard"
+								},
+								{
+									"key": "scope",
+									"value": "patient/*.rs"
+								},
+								{
+									"key": "token_endpoint",
+									"value": "/auth/token"
+								},
+								{
+									"key": "client_id",
+									"value": "adriano-utfpr"
+								},
+								{
+									"key": "aud",
+									"value": "asd"
+								},
+								{
+									"key": "state",
+									"value": "asd"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200 - ok",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "https://if4health.charqueadas.ifsul.edu.br/healthgate/api/neoFassEcg/auth/register?redirect_uri=/api-docs&scope=patient/*.rs&token_endpoint=/auth/token&client_id=67eacf0237bd52430adc8f4d&aud=asd&state=asd",
+									"protocol": "https",
+									"host": [
+										"if4health",
+										"charqueadas",
+										"ifsul",
+										"edu",
+										"br"
+									],
+									"path": [
+										"healthgate",
+										"api",
+										"neoFassEcg",
+										"auth",
+										"register"
+									],
+									"query": [
+										{
+											"key": "redirect_uri",
+											"value": "/api-docs"
+										},
+										{
+											"key": "scope",
+											"value": "patient/*.rs"
+										},
+										{
+											"key": "token_endpoint",
+											"value": "/auth/token"
+										},
+										{
+											"key": "client_id",
+											"value": "67eacf0237bd52430adc8f4d"
+										},
+										{
+											"key": "aud",
+											"value": "asd"
+										},
+										{
+											"key": "state",
+											"value": "asd"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.18.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 24 May 2025 21:52:29 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1769"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"6e9-N1ky+BzkEDqPA6zY9lUvNj1Q69w\""
+								}
+							],
+							"cookie": [],
+							"body": "\"<html>\\n    <head>\\n        <style>\\n            body {\\n                background-color: #143d59;\\n            }\\n            .center {\\n                position: fixed;\\n                left: 50%;\\n                transform: translateX(-50%);\\n                display: flex;\\n                flex-direction: column;\\n                align-items: center;\\n            }\\n            .flex {\\n                display: flex;\\n                flex-direction: column;\\n                align-items: center;\\n                justify-content: center;\\n            }\\n            input {\\n                -webkit-appearance: none;\\n                appearance: none;\\n                border-radius: 1em;\\n                margin: 1em;\\n                border: 1px solid white;\\n                padding: 0.3rem;\\n                width: 100%;\\n            }\\n        </style>\\n    </head>\\n    <body>\\n        <div class=\\\"center\\\">\\n            <img src=\\\"/logo.png\\\" style=\\\"width: 50%; height: auto;\\\" />\\n            <form method=\\\"POST\\\" action=\\\"login\\\">\\n                <input type=\\\"hidden\\\" name=\\\"redirect_uri\\\" value=\\\"/api-docs\\\">\\n                <input type=\\\"hidden\\\" name=\\\"state\\\" value=\\\"asd\\\">\\n                <input type=\\\"hidden\\\" name=\\\"aud\\\" value=\\\"asd\\\">\\n                <input type=\\\"hidden\\\" name=\\\"scope\\\" value=\\\"patient/*.rs\\\">\\n                <input type=\\\"hidden\\\" name=\\\"client_id\\\" value=\\\"67eacf0237bd52430adc8f4d\\\">\\n                <div class=\\\"flex\\\">\\n                    <input type=\\\"text\\\" name=\\\"cpf\\\">\\n                    <input type=\\\"password\\\" name=\\\"senha\\\">\\n                    \\n                    <input type=\\\"submit\\\" value=\\\"Login\\\">\\n                </div>\\n            </form>\\n        </div>\\n    </body>\\n</html>\""
+						}
+					]
+				},
+				{
+					"name": "/login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"redirect_uri\": \"/dashboard\",\r\n    \"scope\": \"patient/*.rs\",\r\n    \"token_endpoint\": \"/auth/token\",\r\n    \"client_id\": \"adriano-utfpr\",\r\n    \"aud\": \"placeholder\",\r\n    \"state\": \"placeholder\",\r\n    \"cpf\": \"123\",\r\n    \"senha\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{if4health_url}}/auth/login",
+							"host": [
+								"{{if4health_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200 - ok",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"redirect_uri\": \"/api-docs\",\r\n    \"scope\": \"patient/*.rs\",\r\n    \"token_endpoint\": \"/auth/token\",\r\n    \"client_id\": \"67eacf0237bd52430adc8f4d\",\r\n    \"aud\": \"placeholder\",\r\n    \"state\": \"placeholder\",\r\n    \"cpf\": \"04824900042\",\r\n    \"senha\": \"healthgate\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://if4health.charqueadas.ifsul.edu.br/healthgate/api/neoFassEcg/auth/login",
+									"protocol": "https",
+									"host": [
+										"if4health",
+										"charqueadas",
+										"ifsul",
+										"edu",
+										"br"
+									],
+									"path": [
+										"healthgate",
+										"api",
+										"neoFassEcg",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.18.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 24 May 2025 21:55:08 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1876"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"754-cqM729Lq7v5uiVSbJhYwqKT61yU\""
+								}
+							],
+							"cookie": [],
+							"body": "\"<html>\\n    <head>\\n        <style>\\n            body {\\n                background-color: #143d59;\\n            }\\n            .center {\\n                position: fixed;\\n                left: 50%;\\n                transform: translateX(-50%);\\n                display: flex;\\n                flex-direction: column;\\n                align-items: center;\\n            }\\n            .flex {\\n                display: flex;\\n                flex-direction: column;\\n                align-items: center;\\n                justify-content: center;\\n            }\\n            input {\\n                -webkit-appearance: none;\\n                appearance: none;\\n                border-radius: 1em;\\n                margin: 1em;\\n                border: 1px solid white;\\n                padding: 0.3rem;\\n                width: 100%;\\n            }\\n        </style>\\n    </head>\\n    <body>\\n        <div class=\\\"center\\\">\\n            <img src=\\\"/logo.png\\\" style=\\\"width: 50%; height: auto;\\\" />\\n            <form method=\\\"POST\\\" action=\\\"login\\\">\\n                <input type=\\\"hidden\\\" name=\\\"redirect_uri\\\" value=\\\"/api-docs\\\">\\n                <input type=\\\"hidden\\\" name=\\\"state\\\" value=\\\"placeholder\\\">\\n                <input type=\\\"hidden\\\" name=\\\"aud\\\" value=\\\"placeholder\\\">\\n                <input type=\\\"hidden\\\" name=\\\"scope\\\" value=\\\"patient/*.rs\\\">\\n                <input type=\\\"hidden\\\" name=\\\"client_id\\\" value=\\\"67eacf0237bd52430adc8f4d\\\">\\n                <div class=\\\"flex\\\">\\n                    <input type=\\\"text\\\" name=\\\"cpf\\\">\\n                    <input type=\\\"password\\\" name=\\\"senha\\\">\\n                    \\n                        <p style=\\\"color: red\\\">Login not found</p>\\n                    \\n                    <input type=\\\"submit\\\" value=\\\"Login\\\">\\n                </div>\\n            </form>\\n        </div>\\n    </body>\\n</html>\""
+						}
+					]
+				},
+				{
+					"name": "/authorize",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"redirect_uri\": \"/dashboard\",\r\n    \"scope\": \"patient/*.rs\",\r\n    \"token_endpoint\": \"/auth/token\",\r\n    \"client_id\": \"adriano-utfpr\",\r\n    \"paciente_id\": \"67eacf0237bd52430adc8f4d\",\r\n    \"aud\": \"asd\",\r\n    \"state\": \"asd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{if4health_url}}/auth/authorize",
+							"host": [
+								"{{if4health_url}}"
+							],
+							"path": [
+								"auth",
+								"authorize"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200 - OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"redirect_uri\": \"/api-docs\",\r\n    \"scope\": \"patient/*.rs\",\r\n    \"token_endpoint\": \"/auth/token\",\r\n    \"client_id\": \"67eacf0237bd52430adc8f4d\",\r\n    \"paciente_id\": \"67eacf0237bd52430adc8f4d\",\r\n    \"aud\": \"placeholder\",\r\n    \"state\": \"placeholder\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/neoFassEcg/auth/authorize",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"neoFassEcg",
+										"auth",
+										"authorize"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "3271"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"cc7-gdJ2Y1iRzmeyH0qaKIlLTjUgiQ0\""
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 09 Apr 2025 00:07:56 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "\"\\n<!-- HTML for static distribution bundle build -->\\n<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n  <meta charset=\\\"UTF-8\\\">\\n  \\n  <title>Swagger UI</title>\\n  <link rel=\\\"stylesheet\\\" type=\\\"text/css\\\" href=\\\"./swagger-ui.css\\\" >\\n  <link rel=\\\"icon\\\" type=\\\"image/png\\\" href=\\\"./favicon-32x32.png\\\" sizes=\\\"32x32\\\" /><link rel=\\\"icon\\\" type=\\\"image/png\\\" href=\\\"./favicon-16x16.png\\\" sizes=\\\"16x16\\\" />\\n  <style>\\n    html\\n    {\\n      box-sizing: border-box;\\n      overflow: -moz-scrollbars-vertical;\\n      overflow-y: scroll;\\n    }\\n    *,\\n    *:before,\\n    *:after\\n    {\\n      box-sizing: inherit;\\n    }\\n\\n    body {\\n      margin:0;\\n      background: #fafafa;\\n    }\\n  </style>\\n</head>\\n\\n<body>\\n\\n<svg xmlns=\\\"http://www.w3.org/2000/svg\\\" xmlns:xlink=\\\"http://www.w3.org/1999/xlink\\\" style=\\\"position:absolute;width:0;height:0\\\">\\n  <defs>\\n    <symbol viewBox=\\\"0 0 20 20\\\" id=\\\"unlocked\\\">\\n      <path d=\\\"M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V6h2v-.801C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8z\\\"></path>\\n    </symbol>\\n\\n    <symbol viewBox=\\\"0 0 20 20\\\" id=\\\"locked\\\">\\n      <path d=\\\"M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8zM12 8H8V5.199C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8z\\\"/>\\n    </symbol>\\n\\n    <symbol viewBox=\\\"0 0 20 20\\\" id=\\\"close\\\">\\n      <path d=\\\"M14.348 14.849c-.469.469-1.229.469-1.697 0L10 11.819l-2.651 3.029c-.469.469-1.229.469-1.697 0-.469-.469-.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-.469-.469-.469-1.228 0-1.697.469-.469 1.228-.469 1.697 0L10 8.183l2.651-3.031c.469-.469 1.228-.469 1.697 0 .469.469.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c.469.469.469 1.229 0 1.698z\\\"/>\\n    </symbol>\\n\\n    <symbol viewBox=\\\"0 0 20 20\\\" id=\\\"large-arrow\\\">\\n      <path d=\\\"M13.25 10L6.109 2.58c-.268-.27-.268-.707 0-.979.268-.27.701-.27.969 0l7.83 7.908c.268.271.268.709 0 .979l-7.83 7.908c-.268.271-.701.27-.969 0-.268-.269-.268-.707 0-.979L13.25 10z\\\"/>\\n    </symbol>\\n\\n    <symbol viewBox=\\\"0 0 20 20\\\" id=\\\"large-arrow-down\\\">\\n      <path d=\\\"M17.418 6.109c.272-.268.709-.268.979 0s.271.701 0 .969l-7.908 7.83c-.27.268-.707.268-.979 0l-7.908-7.83c-.27-.268-.27-.701 0-.969.271-.268.709-.268.979 0L10 13.25l7.418-7.141z\\\"/>\\n    </symbol>\\n\\n\\n    <symbol viewBox=\\\"0 0 24 24\\\" id=\\\"jump-to\\\">\\n      <path d=\\\"M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7z\\\"/>\\n    </symbol>\\n\\n    <symbol viewBox=\\\"0 0 24 24\\\" id=\\\"expand\\\">\\n      <path d=\\\"M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z\\\"/>\\n    </symbol>\\n\\n  </defs>\\n</svg>\\n\\n<div id=\\\"swagger-ui\\\"></div>\\n\\n<script src=\\\"./swagger-ui-bundle.js\\\"> </script>\\n<script src=\\\"./swagger-ui-standalone-preset.js\\\"> </script>\\n<script src=\\\"./swagger-ui-init.js\\\"> </script>\\n\\n\\n\\n<style>\\n  .swagger-ui .topbar .download-url-wrapper { display: none } undefined\\n</style>\\n</body>\\n\\n</html>\\n\""
+						}
+					]
+				},
+				{
+					"name": "/token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOnsiJG9pZCI6IjY3ZjVhMmFkYzRhN2I0NDgyZjc5ZmM2ZiJ9LCJjbGllbnRfaWQiOiJnYXRld2F5IiwiY2xpZW50X3NlY3JldCI6IjEyMyIsInNjb3BlIjoiYWxsLyouY3J1ZHNoIiwiZ3JhbnRfdHlwZSI6ImNsaWVudF9jcmVkZW50aWFscyJ9.f9pbYBdoxd4_D8CKWy7da58fCjh_siHeC5CfRfg8-nw4\",\r\n    \"client_id\": \"gateway\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{if4health_url}}/auth/token",
+							"host": [
+								"{{if4health_url}}"
+							],
+							"path": [
+								"auth",
+								"token"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200 - ok",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"code\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOnsiJG9pZCI6IjY3ZjVhMmFkYzRhN2I0NDgyZjc5ZmM2ZiJ9LCJjbGllbnRfaWQiOiJnYXRld2F5IiwiY2xpZW50X3NlY3JldCI6IjEyMyIsInNjb3BlIjoiYWxsLyouY3J1ZHNoIiwiZ3JhbnRfdHlwZSI6ImNsaWVudF9jcmVkZW50aWFscyJ9.f9pbYBdoxd4_D8CKWy7da58fCjh_siHeC5CfRfg8-nw4\",\r\n    \"client_id\": \"gateway\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://if4health.charqueadas.ifsul.edu.br/healthgate/api/neoFassEcg/auth/token",
+									"protocol": "https",
+									"host": [
+										"if4health",
+										"charqueadas",
+										"ifsul",
+										"edu",
+										"br"
+									],
+									"path": [
+										"healthgate",
+										"api",
+										"neoFassEcg",
+										"auth",
+										"token"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.18.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 24 May 2025 21:56:06 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "37"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"25-oh0Ov1g+YflP7JbzvP+1Bxck9tc\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 401,\n    \"message\": \"Invalid auth\"\n}"
+						}
+					]
+				}
+			],
+			"description": "|  |  |\n| --- | --- |\n|  |  |"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "if4health_url",
+			"value": "https://if4health.charqueadas.ifsul.edu.br/biosignalinfhir",
+			"type": "string"
+		}
+	]
+}
