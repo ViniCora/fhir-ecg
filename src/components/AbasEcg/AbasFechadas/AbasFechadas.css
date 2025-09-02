@@ -1,0 +1,18 @@
+.dock-closed {
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dock-closed-tab {
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 0.8rem;
+  background-color: #ddd;
+}
+
+.p-sidebar .p-sidebar-header{
+  padding: 0px;
+}
