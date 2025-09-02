@@ -12,7 +12,7 @@ function App() {
   return (
     <div style={{ width: '100%' }}>
       <QueryClientProvider client={queryClient}>
-        {/* <FetchTestPage/> */}
+        <FetchTestPage/>
         <DashboardEcgPage />
       </QueryClientProvider>
     </div>
