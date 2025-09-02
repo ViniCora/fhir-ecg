@@ -23,6 +23,7 @@ export default function DashboardEcgPage() {
   const [pontos, setPontos] = useState<number[]>([]);
   const [shapesSelecionados, setShapesSelecionados] = useState<Partial<Shape>[]>([]);
   const [anotacao, setAnotacao] = useState<any | null>(null);
+  const [marcacoes, setMarcacoes] = useState<{sample: number, tipo: string}[]>([]);
 
   useEffect(() => {
     carregarArquivos();
@@ -54,6 +55,18 @@ export default function DashboardEcgPage() {
       });
     }
 
+    const respMarks = await fetch("/200annotations.txt");
+    const textoMarks = await respMarks.text();
+    const linhasMarks = textoMarks.split(/\r?\n/).map(l => l.trim()).filter(l => l !== "" && !l.startsWith("Time"));
+    
+    const marcacoes = linhasMarks.map(l => {
+      const partes = l.split(/\s+/); // separa por espaço
+      return {
+        sample: parseInt(partes[1]),
+        tipo: partes[2]
+      };
+    });
+
     for (const nome of derivacoes) {
       todos.push({
         ecgDerivacao: nome,
@@ -69,6 +82,7 @@ export default function DashboardEcgPage() {
     ];
 
     setPacientes(pacientes);
+    setMarcacoes(marcacoes);
   }
 
   function handleRelayout(eventData: PlotRelayoutEvent) {
@@ -184,6 +198,7 @@ export default function DashboardEcgPage() {
         onClick={handleClick}
         extraShapes={shapesSelecionados}
         extraAnnotations={anotacao ? [anotacao] : []}
+        marcacoes={dado.ecgDerivacao === "MLII" ? marcacoes : []}
       />
     ),
   }));

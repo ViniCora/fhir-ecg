@@ -22,6 +22,7 @@ interface ECGPlotProps {
   onClick?: (event: PlotMouseEvent) => void;
   extraShapes?: Partial<Shape>[];
   extraAnnotations?: Partial<Annotations>[];
+  marcacoes?: {sample: number, tipo: string}[];
 }
 
 export default function ECGPlot({
@@ -36,9 +37,9 @@ export default function ECGPlot({
   onClick,
   extraShapes = [],
   extraAnnotations = [],
+  marcacoes = [],
 }: ECGPlotProps) {
   if (!data || data.length === 0) return <div>Carregando...</div>;
-
   const gain = 200;
   const dataVoltagem = data.map((valor) => valor / gain);
   const time = data.map((_, i) => i / samplingRate);
@@ -112,6 +113,28 @@ export default function ECGPlot({
     ...gerarLinhasHorizontaisGrossas(rangeX, rangeY),
   ];
 
+  const cores: Record<string, string> = {
+    "+": "blue",
+    "N": "green",
+    "V": "red",
+    "A": "orange",
+    "~": "purple"
+  };
+  const marcacoesData: Partial<PlotData>[] = marcacoes
+  ? marcacoes
+      .filter(m => m.sample < data.length)
+      .map(m => ({
+        x: [m.sample / samplingRate],
+        y: [data[m.sample] / gain],
+        type: "scatter",
+        mode: "markers",
+        marker: { color: cores[m.tipo] || "black", size: 10 },
+        name: m.tipo,
+        text: [`${m.tipo} (${m.sample})`],
+        hoverinfo: "text"
+      }))
+  : [];
+
   const plotData: Partial<PlotData>[] = [
     {
       x: time,
@@ -120,10 +143,12 @@ export default function ECGPlot({
       mode: "lines",
       line: { color: "black", width: 2 }
     },
+    ...marcacoesData
   ];
 
   const layout: Partial<Layout> = {
     autosize: true,
+    showlegend: false,
     dragmode: "pan",
     margin: { l: 0, r: 0, t: 0, b: 0 },
     xaxis: {
