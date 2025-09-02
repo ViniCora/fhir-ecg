@@ -1,0 +1,569 @@
+{
+	"info": {
+		"_postman_id": "ceed1dab-daa3-4d27-8d9d-07f3b7df6852",
+		"name": "neoFASS-ECG - Patient Auth",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38704281"
+	},
+	"item": [
+		{
+			"name": "1 - Well-Known",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set('token_endpoint', pm.response.json().token_endpoint)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/.well-known/smart-configuration",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						".well-known",
+						"smart-configuration"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "200 - ok",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/.well-known/smart-configuration",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								".well-known",
+								"smart-configuration"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "465"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1d1-szHSpxin74H2CKgW5Xr1ngngtXI\""
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 02 Apr 2025 00:41:50 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"authorization_endpoint\": \"localhost:8080/auth/register\",\n    \"token_endpoint\": \"localhost:8080/auth/token\",\n    \"token_endpoint_auth_methods_supported\": [\n        \"private_key_jwt\"\n    ],\n    \"grant_types_supported\": [\n        \"authorization_code\",\n        \"client_credentials\"\n    ],\n    \"scopes_supported\": [\n        \"patient/*.rs\"\n    ],\n    \"response_types_supported\": [\n        \"code\"\n    ],\n    \"capabilities\": [\n        \"client-confidential-asymmetric\"\n    ],\n    \"code_challenge_methods_supported\": [\n        \"S256\"\n    ],\n    \"token_endpoint_auth_signing_alg_values_supported\": [\n        \"RS384\",\n        \"ES384\"\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "2 - Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/auth/register?redirect_uri=/api-docs&scope&token_endpoint={{token_endpoint}}&client_id&aud=placeholder&state=placeholder",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"register"
+					],
+					"query": [
+						{
+							"key": "redirect_uri",
+							"value": "/api-docs",
+							"description": "Caminho do Swagger"
+						},
+						{
+							"key": "scope",
+							"value": null,
+							"description": "Escopo do usuário"
+						},
+						{
+							"key": "token_endpoint",
+							"value": "{{token_endpoint}}",
+							"description": "Rota para obter o token"
+						},
+						{
+							"key": "client_id",
+							"value": null,
+							"description": "ID do usuário registrado no Mongo"
+						},
+						{
+							"key": "aud",
+							"value": "placeholder"
+						},
+						{
+							"key": "state",
+							"value": "placeholder"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "200 - ok",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/auth/register?redirect_uri=/api-docs&scope=patient/*.rs&token_endpoint={{token_endpoint}}&client_id=67eacf0237bd52430adc8f4d&aud=placeholder&state=placeholder",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							],
+							"query": [
+								{
+									"key": "redirect_uri",
+									"value": "/api-docs",
+									"description": "Caminho do Swagger"
+								},
+								{
+									"key": "scope",
+									"value": "patient/*.rs",
+									"description": "Escopo do usuário"
+								},
+								{
+									"key": "token_endpoint",
+									"value": "{{token_endpoint}}",
+									"description": "Rota para obter o token"
+								},
+								{
+									"key": "client_id",
+									"value": "67eacf0237bd52430adc8f4d",
+									"description": "ID do usuário registrado no Mongo"
+								},
+								{
+									"key": "aud",
+									"value": "placeholder"
+								},
+								{
+									"key": "state",
+									"value": "placeholder"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "html",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "text/html; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "1735"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"6c7-BOWWMtZ3bXs6O8FZcSpUl6C1Z0s\""
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 02 Apr 2025 00:42:33 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "<html>\n    <head>\n        <style>\r\n            body {\r\n                background-color: #143d59;\r\n            }\r\n            .center {\r\n                position: fixed;\r\n                left: 50%;\r\n                transform: translateX(-50%);\r\n                display: flex;\r\n                flex-direction: column;\r\n                align-items: center;\r\n            }\r\n            .flex {\r\n                display: flex;\r\n                flex-direction: column;\r\n                align-items: center;\r\n                justify-content: center;\r\n            }\r\n            input {\r\n                -webkit-appearance: none;\r\n                appearance: none;\r\n                border-radius: 1em;\r\n                margin: 1em;\r\n                border: 1px solid white;\r\n                padding: 0.3rem;\r\n                width: 100%;\r\n            }\r\n        </style>\n    </head>\n    <body>\n        <div class=\"center\">\n            <img src=\"/logo.png\" style=\"width: 50%; height: auto;\" />\n            <form method=\"POST\" action=\"/auth/login\">\n                <input type=\"hidden\" name=\"redirect_uri\" value=\"/api-docs\">\n                <input type=\"hidden\" name=\"state\" value=\"placeholder\">\n                <input type=\"hidden\" name=\"aud\" value=\"placeholder\">\n                <input type=\"hidden\" name=\"scope\" value=\"patient/*.rs\">\n                <input type=\"hidden\" name=\"client_id\" value=\"67eacf0237bd52430adc8f4d\">\n                <div class=\"flex\">\n                    <input type=\"text\" name=\"cpf\">\n                    <input type=\"password\" name=\"senha\">\n                    <input type=\"submit\" value=\"Login\">\r\n                \n                </div>\n            </form>\n        </div>\n    </body>\n</html>"
+				}
+			]
+		},
+		{
+			"name": "3 - Login",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"redirect_uri\": \"/api-docs\",\r\n    \"scope\": \"patient/*.rs\",\r\n    \"token_endpoint\": \"{{token_endpoint}}\",\r\n    \"client_id\": \"{{client_id}}\",\r\n    \"aud\": \"placeholder\",\r\n    \"state\": \"placeholder\",\r\n    \"cpf\": \"123\",\r\n    \"senha\": \"123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/auth/login",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "200 - ok",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"redirect_uri\": \"/api-docs\",\r\n    \"scope\": \"patient/*.rs\",\r\n    \"token_endpoint\": \"{{token_endpoint}}\",\r\n    \"client_id\": \"{{client_id}}\",\r\n    \"aud\": \"placeholder\",\r\n    \"state\": \"placeholder\",\r\n    \"cpf\": \"04824900042\",\r\n    \"senha\": \"healthgate\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "html",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "text/html; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "1498"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"5da-Yvn6nH3KZigqmM0QJ8CIPtV3jQM\""
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 02 Apr 2025 00:56:30 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "<html>\n    <head>\n        <style>\r\n            body {\r\n                background-color: #143d59;\r\n                color: white;\r\n                font-weight: bold;\r\n            }\r\n            .center {\r\n                position: fixed;\r\n                top: 50%;\r\n                left: 50%;\r\n                transform: translate(-50%, -50%);\r\n            }\r\n            h1 {\r\n                font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;\r\n            }\r\n        </style>\n    </head>\n    <body>\n        <div class=\"center\">\n            <form method=\"POST\" action=\"/auth/authorize\">\n                <h1>Essa aplicação está solicitando os seguintes dados:</h1>\n                <ul>\n                    <li>Ler dados do paciente</li>\n                    <li>Ler dados de exames</li>\n                </ul>\n                <input type=\"hidden\" name=\"redirect_uri\" value=\"/api-docs\">\n                <input type=\"hidden\" name=\"state\" value=\"placeholder\">\n                <input type=\"hidden\" name=\"aud\" value=\"placeholder\">\n                <input type=\"hidden\" name=\"scope\" value=\"patient/*.rs\">\n                <input type=\"hidden\" name=\"client_id\" value=\"67eacf0237bd52430adc8f4d\">\n                <input type=\"hidden\" name=\"paciente_id\" value=\"67eacf0237bd52430adc8f4d\">\n                <input type=\"submit\" value=\"Autorizar\">\r\n        \n            </form>\n        </div>\n    </body>\n</html>"
+				}
+			]
+		},
+		{
+			"name": "4 - Authorize",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const sdk = require('postman-collection');\r",
+							"\r",
+							"let location = \"http://www.foo.com\" + pm.response.headers.get('location');\r",
+							"let authorizationCode = new sdk.Url(location).query.get('code');\r",
+							"pm.environment.set('authorization_code', authorizationCode);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"followRedirects": false
+			},
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"redirect_uri\": \"/api-docs\",\r\n    \"scope\": \"patient/*.rs\",\r\n    \"token_endpoint\": \"{{token_endpoint}}\",\r\n    \"client_id\": \"{{client_id}}\",\r\n    \"paciente_id\": \"{{paciente_id}}\",\r\n    \"aud\": \"placeholder\",\r\n    \"state\": \"placeholder\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/auth/authorize",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"authorize"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5 - Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set('access_token', pm.response.json().access_token)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"grant_type\": \"authorization_code\",\r\n    \"scope\":\"patient/*.rs\",\r\n    \"code\": \"{{authorization_code}}\",\r\n    \"redirect_uri\": \"/api-docs\",\r\n    \"client_id\": \"{{client_id}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/auth/token",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"token"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "200 - OK",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOnsiJG9pZCI6IjY3ZjVhMmFkYzRhN2I0NDgyZjc5ZmM2ZiJ9LCJjbGllbnRfaWQiOiJnYXRld2F5IiwiY2xpZW50X3NlY3JldCI6IjEyMyIsInNjb3BlIjoiYWxsLyouY3J1ZHMiLCJncmFudF90eXBlIjoiY2xpZW50X2NyZWRlbnRpYWxzIn0.xRx5EILoYfnoBs9p1jvafyk8xkYqBa_PFtBig5LV454\",\r\n    \"client_id\": \"gateway\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/token",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"token"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "591"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"24f-b8wlyZ0AQ4oeeLq94N7yi7zxgJg\""
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 09 Apr 2025 01:57:44 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"access_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6ImFsbC8qLmNydWRzIiwiY2xpZW50X2lkIjoiZ2F0ZXdheSIsImV4cGlyZXNfaW4iOjM2MDAsImlhdCI6MTc0NDE2Mzg2NCwiZXhwIjoxNzQ0MTY3NDY0fQ.iJ3D0pkIKj4xTfNz_icE712ZzBc26Eolm7IeSm6FM62bUJLfruy4YGszEiIN9yB-0-UFY8UHyB5IMBmj49y5T3J4a6bzxdMI2nYG8pRTlAuknk-xHLD_7Cvi9SWz2G1uhMYcoKQJPuXE06m0f2byoCb6G7-kvJ3s8Omzcb-HufdirujMUQ5av-jdVLLBNIgqDOsF0-PfMgB43RXusOubBgyncIZ99igk33e3sXmh5cGRs9bFS-zQW4bCfWCd_sAkf81qIhQwX_cnZL1L56NLmaIKQpxghBocozM0oGZ1nXLjNQyYeNybnIzDt9xENct3ExfvXhHQp0sCr3K_TVRy8w\",\n    \"token_type\": \"bearer\",\n    \"expires_in\": 3600,\n    \"client_id\": \"gateway\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Github 1",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/auth/register?redirect_uri=api-docs&aud=placeholder&scope=patient/*.rs&state=placeholder&token_endpoint=auth/token&client_id=67eacf0237bd52430adc8f4d",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth",
+						"register"
+					],
+					"query": [
+						{
+							"key": "redirect_uri",
+							"value": "api-docs"
+						},
+						{
+							"key": "aud",
+							"value": "placeholder"
+						},
+						{
+							"key": "scope",
+							"value": "patient/*.rs"
+						},
+						{
+							"key": "state",
+							"value": "placeholder"
+						},
+						{
+							"key": "token_endpoint",
+							"value": "auth/token"
+						},
+						{
+							"key": "client_id",
+							"value": "67eacf0237bd52430adc8f4d"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "localhost:8080",
+			"type": "default"
+		},
+		{
+			"key": "token_endpoint",
+			"value": "/auth/token",
+			"type": "default"
+		},
+		{
+			"key": "client_id",
+			"value": "67eacf0237bd52430adc8f4d",
+			"type": "default"
+		},
+		{
+			"key": "paciente_id",
+			"value": "67eacf0237bd52430adc8f4d",
+			"type": "default"
+		},
+		{
+			"key": "authorization_code",
+			"value": "xxx",
+			"type": "default"
+		}
+	]
+}
