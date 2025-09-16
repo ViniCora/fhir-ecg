@@ -16,6 +16,7 @@ import type { ECGData } from "../../types/ECGData/ECGData";
 import ConfiguracaoLateral from "../../components/Configuracoes/ConfiguracaoLateral";
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
 import { Toast } from "primereact/toast";
+import { fhirService } from "../../services/fhirService";
 
 export default function DashboardEcgPage() {
   const [layoutSync, setLayoutSync] = useState<Partial<Layout>>({});
@@ -73,7 +74,30 @@ export default function DashboardEcgPage() {
       "/ecg_completo.csv"
     );
     const marcacoes = await carregarMarcacoes("/200annotations.txt");
-    const pacientes = montarPacientes(derivacoes, valoresPorDerivacao);
+    
+    let fhirEcgData: ECGData[] | null = null;
+    try {
+      const observationId = '68c8ea55083e7f44c6e20354';
+      console.log('Attempting to load FHIR data...');
+      fhirEcgData = await fhirService.getECGData(observationId);
+      
+      toast.current?.show({
+        severity: "success",
+        summary: "FHIR Data Loaded",
+        detail: "ECG data loaded from FHIR for Vinicius Coradassi",
+        life: 3000,
+      });
+    } catch (error) {
+      console.error('Failed to load FHIR data, using CSV fallback:', error);
+      toast.current?.show({
+        severity: "warn",
+        summary: "FHIR Load Failed",
+        detail: "Using CSV data for all patients",
+        life: 5000,
+      });
+    }
+
+    const pacientes = montarPacientes(derivacoes, valoresPorDerivacao, fhirEcgData);
 
     setPacientes(pacientes);
     setMarcacoes(marcacoes);
@@ -133,16 +157,13 @@ export default function DashboardEcgPage() {
 
   function montarPacientes(
     derivacoes: string[],
-    valoresPorDerivacao: Record<string, number[]>
+    valoresPorDerivacao: Record<string, number[]>,
+    fhirEcgData: ECGData[] | null = null
   ) {
-    const todos: {
-      ecgDerivacao: string;
-      samplingRate: number;
-      valores: number[];
-    }[] = [];
+    const csvEcgs: ECGData[] = [];
 
     for (const nome of derivacoes) {
-      todos.push({
+      csvEcgs.push({
         ecgDerivacao: nome,
         samplingRate: 360,
         valores: valoresPorDerivacao[nome],
@@ -150,9 +171,9 @@ export default function DashboardEcgPage() {
     }
 
     const pacientes: Paciente[] = [
-      { nome: "Adriano Paulichi", ecgs: todos },
-      { nome: "Fábio Itturriet", ecgs: todos },
-      { nome: "Vinicius Coradassi", ecgs: todos },
+      { nome: "Adriano Paulichi", ecgs: csvEcgs },
+      { nome: "Fábio Itturriet", ecgs: csvEcgs },
+      { nome: "Vinicius Coradassi", ecgs: fhirEcgData || csvEcgs },
     ];
 
     return pacientes;
@@ -317,7 +338,6 @@ export default function DashboardEcgPage() {
 
     const samplingRate = ecgsSelecionados[0].samplingRate;
 
-    // Acha o próximo ponto maior que o cursor
     const cursorNum = typeof cursorX === "number" ? cursorX : -Infinity;
     const proximo = marcacoesSelecionadas
       .map((m) => m.sample)
@@ -326,7 +346,6 @@ export default function DashboardEcgPage() {
     if (proximo !== undefined) {
       centralizarNoPonto(proximo, samplingRate);
     } else {
-      // Se não houver próximo, vai para o primeiro
       centralizarNoPonto(marcacoesSelecionadas[0].sample, samplingRate);
     }
   }
@@ -344,7 +363,6 @@ export default function DashboardEcgPage() {
     if (anteriores.length > 0) {
       centralizarNoPonto(anteriores[anteriores.length - 1], samplingRate);
     } else {
-      // Se não houver anterior, vai para o último
       const ultimo = marcacoesSelecionadas[marcacoesSelecionadas.length - 1];
       centralizarNoPonto(ultimo.sample, samplingRate);
     }

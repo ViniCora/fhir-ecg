@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import AuthPage from './pages/AuthPage/AuthPage'
 import HomePage from './pages/HomePage/HomePage'
 import DashboardEcgPage from './pages/DashboardEcgPage/DashboardEcgPage'
+import FhirTestPage from './pages/FhirTestPage/FhirTestPage'
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
@@ -23,6 +24,7 @@ function App() {
               {/* TODO: Protect authenticated routes */}
               <Route path="/home" element={<HomePage />} />
               <Route path="/dashboard" element={<DashboardEcgPage />} />
+              <Route path="/fhir-test" element={<FhirTestPage />} />
             </Routes>
           </BrowserRouter>
       </QueryClientProvider>

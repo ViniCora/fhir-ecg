@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import FHIR from 'fhirclient';
 import axios from 'axios';
 import type { Observation } from 'fhir/r4';
+import type Client from 'fhirclient/lib/Client';
 
 export default function HomePage() {
-  const [fhirClient, setFhirClient] = useState<any>(null);
+  const [fhirClient, setFhirClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,30 +36,19 @@ export default function HomePage() {
       const accessToken = fhirClient.state.tokenResponse?.access_token;
       
       if (!accessToken) {
-        alert('No access token available for HEALTHGATE API call');
+        alert('No access token available for API call');
         return;
       }
 
       // Use a sample observation ID - in a real app, this would come from user input or previous API calls
-      const observationId = '6858559c40f1123de0d9cd78'; // Sample ID from the postman collection
+      const observationId = '68c8c918083e7f44c6e202f1'; // Sample ID from the postman collection
       
-      // Make request to HEALTHGATE FASS ECG Observation endpoint using axios
-      const response = await axios.get<Observation>(
-        `https://if4health.charqueadas.ifsul.edu.br/healthgate/api/fassecg/Observation/${observationId}`,
-        {
-          headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          }
-        }
-      );
-
-      const observationData = response.data;
+      const observationData = await fhirClient.request<Observation>(`/Observation/${observationId}`)
       
-      console.log('HEALTHGATE FASS ECG Observation Data:', observationData);
+      console.log('FASS ECG Observation Data:', observationData);
       
       // Display meaningful information about the ECG observation
-      let message = 'HEALTHGATE FASS ECG Observation retrieved successfully!\n\n';
+      let message = 'FASS ECG Observation retrieved successfully!\n\n';
       message += `Observation ID: ${observationData.id || 'N/A'}\n`;
       message += `Status: ${observationData.status || 'N/A'}\n`;
       message += `Device: ${observationData.device?.display || 'N/A'}\n`;
@@ -76,7 +66,7 @@ export default function HomePage() {
       alert(message);
       
     } catch (error) {
-      console.error('HEALTHGATE FASS ECG API test failed:', error);
+      console.error('FASS ECG API test failed:', error);
       
       // Handle axios-specific errors
       if (axios.isAxiosError(error)) {
@@ -84,9 +74,9 @@ export default function HomePage() {
         const statusText = error.response?.statusText;
         const errorMessage = error.response?.data?.message || error.message;
         
-        alert(`HEALTHGATE FASS ECG API test failed: HTTP ${status} ${statusText}\n${errorMessage}`);
+        alert(`FASS ECG API test failed: HTTP ${status} ${statusText}\n${errorMessage}`);
       } else {
-        alert('HEALTHGATE FASS ECG API test failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        alert('FASS ECG API test failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
       }
     }
   };
