@@ -7,8 +7,9 @@ import type {
   Shape,
   Data as PlotData,
   PlotMouseEvent,
-  Annotations
+  Annotations,
 } from "plotly.js";
+import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
 
 interface ECGPlotProps {
   data: number[];
@@ -22,7 +23,7 @@ interface ECGPlotProps {
   onClick?: (event: PlotMouseEvent) => void;
   extraShapes?: Partial<Shape>[];
   extraAnnotations?: Partial<Annotations>[];
-  marcacoes?: {sample: number, tipo: string}[];
+  marcacoes?: { sample: number; tipo: string }[];
 }
 
 export default function ECGPlot({
@@ -49,8 +50,8 @@ export default function ECGPlot({
   const xMin = Math.min(...time);
   const xMax = Math.max(...time);
   const margem = (yMax - yMin) * 0.1;
-  const margemYShape = (yMax - yMin) * 2;
-  const margemXShape = (xMin - xMax) * 2;
+  // const margemYShape = (yMax - yMin) * 2;
+  // const margemXShape = (xMin - xMax) * 2;
 
   const rangeX = [xMin, xMax];
   const rangeY = [yMin - margem, yMax + margem];
@@ -113,27 +114,20 @@ export default function ECGPlot({
     ...gerarLinhasHorizontaisGrossas(rangeX, rangeY),
   ];
 
-  const cores: Record<string, string> = {
-    "+": "blue",
-    "N": "green",
-    "V": "red",
-    "A": "orange",
-    "~": "purple"
-  };
   const marcacoesData: Partial<PlotData>[] = marcacoes
-  ? marcacoes
-      .filter(m => m.sample < data.length)
-      .map(m => ({
-        x: [m.sample / samplingRate],
-        y: [data[m.sample] / gain],
-        type: "scatter",
-        mode: "markers",
-        marker: { color: cores[m.tipo] || "black", size: 10 },
-        name: m.tipo,
-        text: [`${m.tipo} (${m.sample})`],
-        hoverinfo: "text"
-      }))
-  : [];
+    ? marcacoes
+        .filter((m) => m.sample < data.length)
+        .map((m) => ({
+          x: [m.sample / samplingRate],
+          y: [data[m.sample] / gain],
+          type: "scatter",
+          mode: "markers",
+          marker: { color: coresPorTipo[m.tipo] || "black", size: 10 },
+          name: m.tipo,
+          text: [`${m.tipo} (${m.sample})`],
+          hoverinfo: "text",
+        }))
+    : [];
 
   const plotData: Partial<PlotData>[] = [
     {
@@ -141,9 +135,9 @@ export default function ECGPlot({
       y: dataVoltagem,
       type: "scatter",
       mode: "lines",
-      line: { color: "black", width: 2 }
+      line: { color: "black", width: 2 },
     },
-    ...marcacoesData
+    ...marcacoesData,
   ];
 
   const layout: Partial<Layout> = {
@@ -174,7 +168,7 @@ export default function ECGPlot({
       automargin: false,
       ...layoutSync?.yaxis,
     },
-    shapes: [ ...shapes, ...cursorShape, ...extraShapes],
+    shapes: [...shapes, ...cursorShape, ...extraShapes],
     annotations: extraAnnotations,
     plot_bgcolor: "#fffafa",
     paper_bgcolor: "#fffafa",

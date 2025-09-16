@@ -11,8 +11,13 @@
   cursor: pointer;
   font-size: 0.8rem;
   background-color: #ddd;
+  margin-top: 10px;
 }
 
 .p-sidebar .p-sidebar-header{
   padding: 0px;
+}
+
+.button-dock-closed{
+  margin-top: 10px;
 }
