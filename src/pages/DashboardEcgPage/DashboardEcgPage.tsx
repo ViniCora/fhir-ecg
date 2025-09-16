@@ -77,7 +77,7 @@ export default function DashboardEcgPage() {
     
     let fhirEcgData: ECGData[] | null = null;
     try {
-      const observationId = '68c8ea55083e7f44c6e20354';
+      const observationId = '68c9715e083e7f44c6e203b0';
       console.log('Attempting to load FHIR data...');
       fhirEcgData = await fhirService.getECGData(observationId);
       
@@ -163,10 +163,11 @@ export default function DashboardEcgPage() {
     const csvEcgs: ECGData[] = [];
 
     for (const nome of derivacoes) {
+      const scaledValues = valoresPorDerivacao[nome].map(value => value * 0.005);
       csvEcgs.push({
         ecgDerivacao: nome,
-        samplingRate: 360,
-        valores: valoresPorDerivacao[nome],
+        periodSec: 1 / 360,
+        valores: scaledValues,
       });
     }
 
@@ -288,7 +289,7 @@ export default function DashboardEcgPage() {
   function gerarRetangulos(
     marcacoesSelecionadas: { sample: number; tipo: string }[],
     todasMarcacoes: { sample: number; tipo: string }[],
-    samplingRate: number
+    periodSec: number
   ): { shapes: Partial<Shape>[]; annotations: any[] } {
     const retangulos: Partial<Shape>[] = [];
     const anotacoes: any[] = [];
@@ -297,8 +298,8 @@ export default function DashboardEcgPage() {
       const proximo = todasMarcacoes.find((m) => m.sample > batimento.sample);
       if (!proximo) return;
 
-      const x1 = batimento.sample / samplingRate;
-      const x2 = proximo.sample / samplingRate;
+      const x1 = batimento.sample * periodSec;
+      const x2 = proximo.sample * periodSec;
 
       retangulos.push(
         criarRetangulo(
@@ -314,8 +315,8 @@ export default function DashboardEcgPage() {
     return { shapes: retangulos, annotations: anotacoes };
   }
 
-  function centralizarNoPonto(sample: number, samplingRate: number) {
-    const x = sample / samplingRate;
+  function centralizarNoPonto(sample: number, periodSec: number) {
+    const x = sample * periodSec;
 
     const rangeAtual = layoutSync.xaxis?.range ?? [x - 1, x + 1];
     const largura = rangeAtual[1] - rangeAtual[0];
@@ -336,35 +337,35 @@ export default function DashboardEcgPage() {
   function irParaProximoPonto() {
     if (!temMarcacoes() || !ecgsSelecionados) return;
 
-    const samplingRate = ecgsSelecionados[0].samplingRate;
+    const periodSec = ecgsSelecionados[0].periodSec;
 
     const cursorNum = typeof cursorX === "number" ? cursorX : -Infinity;
     const proximo = marcacoesSelecionadas
       .map((m) => m.sample)
-      .find((s) => s / samplingRate > cursorNum);
+      .find((s) => s * periodSec > cursorNum);
 
     if (proximo !== undefined) {
-      centralizarNoPonto(proximo, samplingRate);
+      centralizarNoPonto(proximo, periodSec);
     } else {
-      centralizarNoPonto(marcacoesSelecionadas[0].sample, samplingRate);
+      centralizarNoPonto(marcacoesSelecionadas[0].sample, periodSec);
     }
   }
 
   function irParaPontoAnterior() {
     if (!temMarcacoes() || !ecgsSelecionados) return;
 
-    const samplingRate = ecgsSelecionados[0].samplingRate;
+    const periodSec = ecgsSelecionados[0].periodSec;
 
     const cursorNum = typeof cursorX === "number" ? cursorX : Infinity;
     const anteriores = marcacoesSelecionadas
       .map((m) => m.sample)
-      .filter((s) => s / samplingRate < cursorNum);
+      .filter((s) => s * periodSec < cursorNum);
 
     if (anteriores.length > 0) {
-      centralizarNoPonto(anteriores[anteriores.length - 1], samplingRate);
+      centralizarNoPonto(anteriores[anteriores.length - 1], periodSec);
     } else {
       const ultimo = marcacoesSelecionadas[marcacoesSelecionadas.length - 1];
-      centralizarNoPonto(ultimo.sample, samplingRate);
+      centralizarNoPonto(ultimo.sample, periodSec);
     }
   }
 
@@ -372,7 +373,7 @@ export default function DashboardEcgPage() {
     const { shapes, annotations } = gerarRetangulos(
       marcacoesSelecionadas,
       marcacoes,
-      dado.samplingRate
+      dado.periodSec
     );
 
     return {
@@ -380,8 +381,7 @@ export default function DashboardEcgPage() {
       content: (
         <ECGPlot
           key={dado.ecgDerivacao}
-          data={dado.valores}
-          samplingRate={dado.samplingRate}
+          ecgData={dado}
           layoutSync={layoutSync}
           cursorX={cursorX}
           onRelayout={handleRelayout}

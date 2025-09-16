@@ -1,5 +1,5 @@
 export interface ECGData {
   ecgDerivacao: string;
-  samplingRate: number;
+  periodSec: number;
   valores: number[];
 }

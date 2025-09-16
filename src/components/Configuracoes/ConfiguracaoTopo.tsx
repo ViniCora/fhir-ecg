@@ -1,4 +1,3 @@
-import React from "react";
 import { Sidebar } from "primereact/sidebar";
 import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/MultiSelect";

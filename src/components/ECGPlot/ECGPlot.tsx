@@ -11,9 +11,10 @@ import type {
 } from "plotly.js";
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
 
+import type { ECGData } from "../../types/ECGData/ECGData";
+
 interface ECGPlotProps {
-  data: number[];
-  samplingRate: number;
+  ecgData: ECGData;
   maxHeight?: number;
   layoutSync?: Partial<Layout>;
   onRelayout?: (event: PlotRelayoutEvent) => void;
@@ -27,8 +28,7 @@ interface ECGPlotProps {
 }
 
 export default function ECGPlot({
-  data,
-  samplingRate,
+  ecgData,
   maxHeight,
   layoutSync,
   onRelayout,
@@ -40,10 +40,9 @@ export default function ECGPlot({
   extraAnnotations = [],
   marcacoes = [],
 }: ECGPlotProps) {
-  if (!data || data.length === 0) return <div>Carregando...</div>;
-  const gain = 200;
-  const dataVoltagem = data.map((valor) => valor / gain);
-  const time = data.map((_, i) => i / samplingRate);
+  if (!ecgData.valores || ecgData.valores.length === 0) return <div>Carregando...</div>;
+  const dataVoltagem = ecgData.valores;
+  const time = ecgData.valores.map((_: number, i: number) => i * ecgData.periodSec);
 
   const yMin = Math.min(...dataVoltagem);
   const yMax = Math.max(...dataVoltagem);
@@ -116,10 +115,10 @@ export default function ECGPlot({
 
   const marcacoesData: Partial<PlotData>[] = marcacoes
     ? marcacoes
-        .filter((m) => m.sample < data.length)
+        .filter((m) => m.sample < ecgData.valores.length)
         .map((m) => ({
-          x: [m.sample / samplingRate],
-          y: [data[m.sample] / gain],
+          x: [m.sample * ecgData.periodSec],
+          y: [ecgData.valores[m.sample]],
           type: "scatter",
           mode: "markers",
           marker: { color: coresPorTipo[m.tipo] || "black", size: 10 },

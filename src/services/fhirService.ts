@@ -130,16 +130,15 @@ export class FhirService {
         sampledData.data.trim().split(' ').map(s => s.trim()).map(Number).filter(n => !isNaN(n)) : [];
       
       const periodMs = sampledData?.period || 8;
-      const samplingRate = Math.round(1000 / periodMs);
+      const periodSec = periodMs / 1000;
       
-      // const factor = sampledData?.factor || 1; TODO use and remove hardcoded factor from Plot
-      const factor = 1;
-      const scaledData = dataPoints.map(value => value * factor);
+      const factor = sampledData?.factor || 1;
+      const scaledValues = dataPoints.map(value => value * factor);
       
       return {
         ecgDerivacao: coding?.display || coding?.code || `Component ${comp.code?.coding?.[0]?.code || 'Unknown'}`,
-        samplingRate: samplingRate,
-        valores: scaledData,
+        periodSec: periodSec,
+        valores: scaledValues,
       };
     });
   }
