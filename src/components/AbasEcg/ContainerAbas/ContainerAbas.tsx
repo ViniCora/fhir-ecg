@@ -1,17 +1,26 @@
-import React, { useState, useEffect, type ReactElement } from "react";
+import { useState, useEffect } from "react";
 import "../AbasEcg.css";
 import AbasFechadas from "../AbasFechadas/AbasFechadas";
 import AbasAbertas from "../AbasAbertas/AbasAbertas";
 import type { TabItem } from "../../../types/TabItem/TabItem";
 
-
 interface SideAccordionDockProps {
   tabs?: TabItem[];
   setVisivelEsquerda: (visivel: boolean) => void;
-  setVisivelTopo: (visivel: boolean) => void;
+  tipoBatimentoSelecionado: string;
+  temMarcacoes: boolean;
+  irParaProximoPonto: () => void;
+  irParaPontoAnterior: () => void;
 }
 
-export default function SideAccordionDock({ tabs = [], setVisivelEsquerda, setVisivelTopo }: SideAccordionDockProps) {
+export default function SideAccordionDock({
+  tabs = [],
+  setVisivelEsquerda,
+  tipoBatimentoSelecionado,
+  temMarcacoes,
+  irParaProximoPonto,
+  irParaPontoAnterior,
+}: SideAccordionDockProps) {
   const totalHeight = window.innerHeight * 0.995;
   const closedWidth = 45;
 
@@ -21,12 +30,12 @@ export default function SideAccordionDock({ tabs = [], setVisivelEsquerda, setVi
   useEffect(() => {
     const maxIndex = tabs.length - 1;
 
-    // mantém só índices válidos
-    const aindaAbertos = openTabs.filter(i => i <= maxIndex);
-    const aindaFechados = closedTabs.filter(i => i <= maxIndex);
+    const aindaAbertos = openTabs.filter((i) => i <= maxIndex);
+    const aindaFechados = closedTabs.filter((i) => i <= maxIndex);
 
-    // abre automaticamente os novos que não existiam
-    const novos = tabs.map((_, i) => i).filter(i => !aindaAbertos.includes(i) && !aindaFechados.includes(i));
+    const novos = tabs
+      .map((_, i) => i)
+      .filter((i) => !aindaAbertos.includes(i) && !aindaFechados.includes(i));
 
     setOpenTabs([...aindaAbertos, ...novos]);
     setClosedTabs(aindaFechados);
@@ -54,7 +63,10 @@ export default function SideAccordionDock({ tabs = [], setVisivelEsquerda, setVi
         totalHeight={totalHeight}
         closedWidth={closedWidth}
         setVisivelEsquerda={setVisivelEsquerda}
-        setVisivelTopo={setVisivelTopo}
+        tipoBatimentoSelecionado={tipoBatimentoSelecionado}
+        temMarcacoes={temMarcacoes}
+        irParaProximoPonto={irParaProximoPonto}
+        irParaPontoAnterior={irParaPontoAnterior}
       />
       <AbasAbertas
         tabs={tabs}

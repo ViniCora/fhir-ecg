@@ -1,4 +1,3 @@
-import React from "react";
 import { Sidebar } from "primereact/sidebar";
 import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/MultiSelect";
@@ -6,6 +5,8 @@ import { FloatLabel } from "primereact/FloatLabel";
 import { InputSwitch } from "primereact/InputSwitch";
 import type { Paciente } from "../../types/Paciente/Paciente";
 import type { ECGData } from "../../types/ECGData/ECGData";
+import { tiposBatimentos } from "../../types/TiposBatimentos/TiposBatimentos";
+import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
 
 interface ConfiguracaoLateralProps {
   visivelEsquerda: boolean;
@@ -24,6 +25,9 @@ interface ConfiguracaoLateralProps {
 
   mostrarLinhaGrafico: boolean;
   setMostrarLinhaGrafico: (v: boolean) => void;
+
+  tipoBatimentoSelecionado: string;
+  setTipoBatimentoSelecionado: (v: string) => void;
 }
 
 export default function ConfiguracaoLateral({
@@ -38,8 +42,34 @@ export default function ConfiguracaoLateral({
   setMostrarLinha,
   mostrarLinhaGrafico,
   setMostrarLinhaGrafico,
+  tipoBatimentoSelecionado,
+  setTipoBatimentoSelecionado,
 }: ConfiguracaoLateralProps) {
-    
+  const tiposBatimentosOptions = Object.entries(tiposBatimentos).map(
+    ([key, value]) => ({
+      label: value,
+      value: key,
+      cor: coresPorTipo[key],
+    })
+  );
+
+  const optionTemplate = (option: any) => {
+    if (!option) return <span />;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span
+          style={{
+            width: "12px",
+            height: "12px",
+            backgroundColor: option.cor,
+            borderRadius: "50%",
+            display: "inline-block",
+          }}
+        />
+        <span>{option.label}</span>
+      </div>
+    );
+  };
   return (
     <Sidebar
       visible={visivelEsquerda}
@@ -85,6 +115,21 @@ export default function ConfiguracaoLateral({
             <label htmlFor="ms-cities">Derivações</label>
           </FloatLabel>
         </div>
+        <FloatLabel>
+          <Dropdown
+            inputId="tipoMarcacao"
+            placeholder="Selecione um Tipo"
+            showClear={tipoBatimentoSelecionado != null}
+            value={tipoBatimentoSelecionado}
+            onChange={(e) => setTipoBatimentoSelecionado(e.value)}
+            options={tiposBatimentosOptions ?? []}
+            optionLabel="label"
+            itemTemplate={optionTemplate}
+            valueTemplate={(option) => optionTemplate(option)}
+            style={{ width: "90%" }}
+          />
+          <label htmlFor="pacienteInput">Tipo Batimento</label>
+        </FloatLabel>
         <div
           style={{
             display: "flex",
