@@ -189,7 +189,7 @@ export default function ECGPlot({
         layout={layout}
         config={{
           responsive: true,
-          scrollZoom: true,
+          scrollZoom: false,
           displayModeBar: false,
         }}
         onRelayout={onRelayout}

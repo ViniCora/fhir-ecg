@@ -2,6 +2,7 @@ import Plot from "react-plotly.js";
 import type { Layout, PlotRelayoutEvent, PlotData } from "plotly.js";
 import type { ECGData } from "../../types/ECGData/ECGData";
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
+import { useState, useRef } from "react";
 
 interface ECGRangeSliderProps {
   ecgData: ECGData;
@@ -16,6 +17,10 @@ export default function ECGRangeSlider({
   onRelayout,
   marcacoes,
 }: ECGRangeSliderProps) {
+  const [windowStart, setWindowStart] = useState(0);
+  const windowSize = 10;
+  const plotRef = useRef<any>(null);
+
   if (!ecgData.valores || ecgData.valores.length === 0) {
     return (
       <div
@@ -41,7 +46,7 @@ export default function ECGRangeSlider({
           y: [ecgData.valores[m.sample]],
           type: "scatter",
           mode: "markers",
-          marker: { color: coresPorTipo[m.tipo] || "black", size: 10 },
+          marker: { color: coresPorTipo[m.tipo] || "black", size: 8 },
           name: m.tipo,
           text: [`${m.tipo} (${m.sample})`],
           hoverinfo: "text",
@@ -51,22 +56,35 @@ export default function ECGRangeSlider({
   const time = ecgData.valores.map(
     (_: number, i: number) => i * ecgData.periodSec
   );
+  const totalDuration = time[time.length - 1];
 
-  const rangesliderLayout: Partial<Layout> = {
+  const tickInterval = 10;
+  const tickVals = [];
+  const tickTexts = [];
+
+  for (let t = 0; t <= totalDuration; t += tickInterval) {
+    tickVals.push(t);
+    const minutes = Math.floor(t / 60);
+    const seconds = Math.floor(t % 60);
+    tickTexts.push(`${minutes}:${seconds.toString().padStart(2, "0")}`);
+  }
+
+  const xStart = windowStart;
+  const xEnd = windowStart + windowSize;
+
+  const layout: Partial<Layout> = {
     autosize: true,
     showlegend: false,
-    dragmode: "zoom",
     margin: { l: 20, r: 20, t: 10, b: 20 },
+    dragmode: false,
     xaxis: {
       showgrid: false,
       zeroline: false,
       showticklabels: true,
-      rangeslider: {
-        visible: true,
-        thickness: 0.1,
-        bgcolor: "#f5f5f5",
-        bordercolor: "#ccc",
-      },
+      range: [0, totalDuration],
+      fixedrange: true,
+      tickvals: tickVals,
+      ticktext: tickTexts,
       ...layoutSync?.xaxis,
     },
     yaxis: {
@@ -75,42 +93,64 @@ export default function ECGRangeSlider({
       showticklabels: false,
       fixedrange: true,
     },
+    shapes: [
+      {
+        type: "rect",
+        xref: "x",
+        yref: "paper",
+        x0: xStart,
+        x1: xEnd,
+        y0: 0,
+        y1: 1,
+        fillcolor: "rgba(0, 102, 255, 0.3)",
+        line: { color: "#0066ff", width: 2 },
+      },
+    ],
     plot_bgcolor: "white",
     paper_bgcolor: "white",
   };
 
-  const rangesliderData: Partial<PlotData>[] = [
+  const data: Partial<PlotData>[] = [
     {
       x: time,
       y: ecgData.valores,
       type: "scatter",
       mode: "lines",
       line: { color: "gray", width: 1 },
+      name: "ECG",
     },
     ...marcacoesData,
   ];
 
-  const handleRelayout = (event: PlotRelayoutEvent) => {
+  const handleClick = (event: any) => {
+    const xValue = event.points?.[0]?.x;
+    if (xValue !== undefined) {
+      let newStart = xValue - windowSize / 2;
+
+      if (newStart < 0) newStart = 0;
+      if (newStart + windowSize > totalDuration)
+        newStart = totalDuration - windowSize;
+
+      setWindowStart(newStart);
+      onRelayout({
+        "xaxis.range[0]": newStart,
+        "xaxis.range[1]": newStart + windowSize,
+      });
+    }
+  };
+
+  const handleRelayout = (event: any) => {
+    // Impede o Plotly de mudar o zoom ou range
     if (
-      event["xaxis.range[0]"] !== undefined &&
+      event["xaxis.range[0]"] !== undefined ||
       event["xaxis.range[1]"] !== undefined
     ) {
-      const start = event["xaxis.range[0]"] as number;
-      const end = event["xaxis.range[1]"] as number;
-      const desiredDuration = 10;
-
-      const actualDuration = end - start;
-      if (Math.abs(actualDuration - desiredDuration) > 1e-6) {
-        const newEnd = start + desiredDuration;
-        onRelayout({
-          "xaxis.range[0]": start,
-          "xaxis.range[1]": newEnd,
+      const plot = plotRef.current;
+      if (plot) {
+        plot.relayout({
+          "xaxis.range": [0, totalDuration],
         });
-      } else {
-        onRelayout(event);
       }
-    } else {
-      onRelayout(event);
     }
   };
 
@@ -125,14 +165,42 @@ export default function ECGRangeSlider({
       }}
     >
       <Plot
-        data={rangesliderData}
-        layout={rangesliderLayout}
+        ref={plotRef}
+        data={data}
+        layout={{
+          ...layout,
+          xaxis: {
+            ...layout.xaxis,
+            range: [0, totalDuration],
+            autorange: false,
+            fixedrange: true,
+          },
+          yaxis: {
+            ...layout.yaxis,
+            autorange: true,
+            fixedrange: true,
+          },
+        }}
         config={{
           responsive: true,
           displayModeBar: false,
           scrollZoom: false,
         }}
-        onRelayout={handleRelayout}
+        onClick={handleClick}
+        onRelayout={(event) => {
+          const plot = plotRef.current;
+          if (!plot) return;
+
+          const changedRange =
+            event["xaxis.range[0]"] !== undefined ||
+            event["xaxis.range[1]"] !== undefined;
+
+          if (changedRange) {
+            plot.relayout({
+              "xaxis.range": [0, totalDuration],
+            });
+          }
+        }}
         style={{ width: "100%", height: "100%" }}
       />
     </div>

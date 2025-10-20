@@ -349,11 +349,25 @@ export default function DashboardEcgPage() {
     if (!temMarcacoes() || !ecgsSelecionados) return;
 
     const periodSec = ecgsSelecionados[0].periodSec;
+    const rangeRaw = layoutSync.xaxis?.range;
 
-    const cursorNum = typeof cursorX === "number" ? cursorX : -Infinity;
+    let cursor = cursorX as number | null;
+
+    const range =
+      rangeRaw && rangeRaw.length === 2
+        ? ([Number(rangeRaw[0]), Number(rangeRaw[1])] as [number, number])
+        : null;
+
+    if (
+      range &&
+      (typeof cursor !== "number" || cursor < range[0] || cursor > range[1])
+    ) {
+      cursor = (range[0] + range[1]) / 2;
+    }
+
     const proximo = marcacoesSelecionadas
       .map((m) => m.sample)
-      .find((s) => s * periodSec > cursorNum);
+      .find((s) => s * periodSec > (cursor ?? -Infinity));
 
     if (proximo !== undefined) {
       centralizarNoPonto(proximo, periodSec);
@@ -366,11 +380,25 @@ export default function DashboardEcgPage() {
     if (!temMarcacoes() || !ecgsSelecionados) return;
 
     const periodSec = ecgsSelecionados[0].periodSec;
+    const rangeRaw = layoutSync.xaxis?.range;
 
-    const cursorNum = typeof cursorX === "number" ? cursorX : Infinity;
+    let cursor = cursorX as number | null;
+
+    const range =
+      rangeRaw && rangeRaw.length === 2
+        ? ([Number(rangeRaw[0]), Number(rangeRaw[1])] as [number, number])
+        : null;
+
+    if (
+      range &&
+      (typeof cursor !== "number" || cursor < range[0] || cursor > range[1])
+    ) {
+      cursor = (range[0] + range[1]) / 2;
+    }
+
     const anteriores = marcacoesSelecionadas
       .map((m) => m.sample)
-      .filter((s) => s * periodSec < cursorNum);
+      .filter((s) => s * periodSec < (cursor ?? Infinity));
 
     if (anteriores.length > 0) {
       centralizarNoPonto(anteriores[anteriores.length - 1], periodSec);
