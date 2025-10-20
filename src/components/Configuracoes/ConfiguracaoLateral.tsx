@@ -26,8 +26,8 @@ interface ConfiguracaoLateralProps {
   mostrarLinhaGrafico: boolean;
   setMostrarLinhaGrafico: (v: boolean) => void;
 
-  tipoBatimentoSelecionado: string;
-  setTipoBatimentoSelecionado: (v: string) => void;
+  tiposBatimentosSelecionados: string[];
+  setTiposBatimentosSelecionados: (v: string[]) => void;
 }
 
 export default function ConfiguracaoLateral({
@@ -42,8 +42,8 @@ export default function ConfiguracaoLateral({
   setMostrarLinha,
   mostrarLinhaGrafico,
   setMostrarLinhaGrafico,
-  tipoBatimentoSelecionado,
-  setTipoBatimentoSelecionado,
+  tiposBatimentosSelecionados,
+  setTiposBatimentosSelecionados,
 }: ConfiguracaoLateralProps) {
   const tiposBatimentosOptions = Object.entries(tiposBatimentos).map(
     ([key, value]) => ({
@@ -116,19 +116,38 @@ export default function ConfiguracaoLateral({
           </FloatLabel>
         </div>
         <FloatLabel>
-          <Dropdown
+          <MultiSelect
             inputId="tipoMarcacao"
-            placeholder="Selecione um Tipo"
-            showClear={tipoBatimentoSelecionado != null}
-            value={tipoBatimentoSelecionado}
-            onChange={(e) => setTipoBatimentoSelecionado(e.value)}
+            placeholder="Selecione um ou mais Tipos"
+            showClear={tiposBatimentosSelecionados.length > 0}
+            value={tiposBatimentosSelecionados}
+            onChange={(e) => setTiposBatimentosSelecionados(e.value)}
             options={tiposBatimentosOptions ?? []}
             optionLabel="label"
             itemTemplate={optionTemplate}
-            valueTemplate={(option) => optionTemplate(option)}
+            filter
+            selectedItemTemplate={(value) => {
+              if (!value) return null;
+              const opt = tiposBatimentosOptions.find((o) => o.value === value);
+              if (!opt) return null;
+
+              return (
+                <span
+                  style={{
+                    backgroundColor: opt.cor,
+                    color: "#fff",
+                    padding: "2px 6px",
+                    borderRadius: "6px",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {opt.label}
+                </span>
+              );
+            }}
             style={{ width: "90%" }}
           />
-          <label htmlFor="pacienteInput">Tipo Batimento</label>
+          <label htmlFor="tipoMarcacao">Tipos Batimentos</label>
         </FloatLabel>
         <div
           style={{

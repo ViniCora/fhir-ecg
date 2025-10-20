@@ -40,17 +40,18 @@ export default function ECGPlot({
   extraAnnotations = [],
   marcacoes = [],
 }: ECGPlotProps) {
-  if (!ecgData.valores || ecgData.valores.length === 0) return <div>Carregando...</div>;
+  if (!ecgData.valores || ecgData.valores.length === 0)
+    return <div>Carregando...</div>;
   const dataVoltagem = ecgData.valores;
-  const time = ecgData.valores.map((_: number, i: number) => i * ecgData.periodSec);
+  const time = ecgData.valores.map(
+    (_: number, i: number) => i * ecgData.periodSec
+  );
 
   const yMin = Math.min(...dataVoltagem);
   const yMax = Math.max(...dataVoltagem);
   const xMin = Math.min(...time);
   const xMax = Math.max(...time);
   const margem = (yMax - yMin) * 0.1;
-  // const margemYShape = (yMax - yMin) * 2;
-  // const margemXShape = (xMin - xMax) * 2;
 
   const rangeX = [xMin, xMax];
   const rangeY = [yMin - margem, yMax + margem];
@@ -149,7 +150,7 @@ export default function ECGPlot({
       gridcolor: "#ff9999",
       gridwidth: 1,
       dtick: 0.04,
-      range: [0, 5],
+      range: [0, 10],
       zeroline: false,
       showticklabels: false,
       automargin: false,

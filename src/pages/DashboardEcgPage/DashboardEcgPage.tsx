@@ -17,6 +17,8 @@ import ConfiguracaoLateral from "../../components/Configuracoes/ConfiguracaoLate
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
 import { Toast } from "primereact/toast";
 import { fhirService } from "../../services/fhirService";
+import type { Marcacoes } from "../../types/Marcacoes/Marcacoes";
+import ECGRangeSlider from "../../components/ECGRangeSlider/ECGRangeSlider";
 
 export default function DashboardEcgPage() {
   const [layoutSync, setLayoutSync] = useState<Partial<Layout>>({});
@@ -34,53 +36,64 @@ export default function DashboardEcgPage() {
     Partial<Shape>[]
   >([]);
   const [anotacao, setAnotacao] = useState<any | null>(null);
-  const [marcacoes, setMarcacoes] = useState<
-    { sample: number; tipo: string }[]
-  >([]);
+  const [marcacoes, setMarcacoes] = useState<Marcacoes[]>([]);
   const [marcacoesSelecionadas, setMarcacoesSelecionadas] = useState<
-    { sample: number; tipo: string }[]
+    Marcacoes[]
   >([]);
-  const [tipoBatimentoSelecionado, setTipoBatimentoSelecionado] = useState("");
+  const [tiposBatimentosSelecionados, setTiposBatimentosSelecionados] =
+    useState<string[]>([]);
   const toast = useRef<Toast>(null);
+  const [mostrarSlider, setMostrarSlider] = useState<boolean>(false);
 
   useEffect(() => {
     carregarArquivos();
   }, []);
 
   useEffect(() => {
-    if (!tipoBatimentoSelecionado) {
+    if (
+      !tiposBatimentosSelecionados ||
+      tiposBatimentosSelecionados.length === 0
+    ) {
       setMarcacoesSelecionadas([]);
       setShapesSelecionados([]);
       return;
     }
 
-    const filtradas = marcacoes.filter(
-      (m) => m.tipo === tipoBatimentoSelecionado
+    const filtradas = marcacoes.filter((m) =>
+      tiposBatimentosSelecionados.includes(m.tipo)
     );
-    setMarcacoesSelecionadas(filtradas);
 
-    if (temMarcacoes()) {
+    if (filtradas.length > 0) {
+      toast.current?.show({
+        severity: "success",
+        summary: "Aviso",
+        detail: "Marcações carregadas com sucesso",
+        life: 5000,
+      });
+    } else {
       toast.current?.show({
         severity: "warn",
         summary: "Aviso",
-        detail: "Não existe nenhum marcação para esse tipo de batimento",
+        detail: "Não existe nenhuma marcação para esses tipos de batimento",
         life: 5000,
       });
     }
-  }, [tipoBatimentoSelecionado, marcacoes]);
+
+    setMarcacoesSelecionadas(filtradas);
+  }, [tiposBatimentosSelecionados, marcacoes]);
 
   async function carregarArquivos() {
     const { derivacoes, valoresPorDerivacao } = await carregarCSV(
       "/ecg_completo.csv"
     );
     const marcacoes = await carregarMarcacoes("/200annotations.txt");
-    
+
     let fhirEcgData: ECGData[] | null = null;
     try {
-      const observationId = '68c9715e083e7f44c6e203b0';
-      console.log('Attempting to load FHIR data...');
+      const observationId = "68c9715e083e7f44c6e203b0";
+      console.log("Attempting to load FHIR data...");
       fhirEcgData = await fhirService.getECGData(observationId);
-      
+
       toast.current?.show({
         severity: "success",
         summary: "FHIR Data Loaded",
@@ -88,7 +101,7 @@ export default function DashboardEcgPage() {
         life: 3000,
       });
     } catch (error) {
-      console.error('Failed to load FHIR data, using CSV fallback:', error);
+      console.error("Failed to load FHIR data, using CSV fallback:", error);
       toast.current?.show({
         severity: "warn",
         summary: "FHIR Load Failed",
@@ -97,7 +110,11 @@ export default function DashboardEcgPage() {
       });
     }
 
-    const pacientes = montarPacientes(derivacoes, valoresPorDerivacao, fhirEcgData);
+    const pacientes = montarPacientes(
+      derivacoes,
+      valoresPorDerivacao,
+      fhirEcgData
+    );
 
     setPacientes(pacientes);
     setMarcacoes(marcacoes);
@@ -163,7 +180,9 @@ export default function DashboardEcgPage() {
     const csvEcgs: ECGData[] = [];
 
     for (const nome of derivacoes) {
-      const scaledValues = valoresPorDerivacao[nome].map(value => value * 0.005);
+      const scaledValues = valoresPorDerivacao[nome].map(
+        (value) => value * 0.005
+      );
       csvEcgs.push({
         ecgDerivacao: nome,
         periodSec: 1 / 360,
@@ -181,14 +200,6 @@ export default function DashboardEcgPage() {
   }
 
   function handleRelayout(eventData: PlotRelayoutEvent) {
-    if (eventData["xaxis.range[0]"] && eventData["xaxis.range[1]"]) {
-      setLayoutSync({
-        xaxis: {
-          range: [eventData["xaxis.range[0]"], eventData["xaxis.range[1]"]],
-        },
-      });
-    }
-
     if (eventData["yaxis.range[0]"] && eventData["yaxis.range[1]"]) {
       setLayoutSync((prev) => ({
         ...prev,
@@ -238,11 +249,11 @@ export default function DashboardEcgPage() {
     };
   }
 
-  function criarAnotacao(x1: number, x2: number): any {
+  function criarAnotacao(x1: number, x2: number, altura: number = 0.98): any {
     const distancia = Math.abs(x2 - x1);
     return {
       x: (x1 + x2) / 2,
-      y: 0.98,
+      y: altura,
       xref: "x",
       yref: "paper",
       text: `Distância: ${distancia.toFixed(2)}s`,
@@ -309,7 +320,7 @@ export default function DashboardEcgPage() {
         )
       );
 
-      anotacoes.push(criarAnotacao(x1, x2));
+      anotacoes.push(criarAnotacao(x1, x2, 0.9));
     });
 
     return { shapes: retangulos, annotations: anotacoes };
@@ -369,12 +380,68 @@ export default function DashboardEcgPage() {
     }
   }
 
-  const minhasAbas: TabItem[] = (ecgsSelecionados ?? []).map((dado) => {
+  function formatarTempo(segundos: number): string {
+    const min = Math.floor(segundos / 60);
+    const sec = Math.floor(segundos % 60);
+    return `${min.toString().padStart(2, "0")}:${sec
+      .toString()
+      .padStart(2, "0")}`;
+  }
+
+  function gerarLinhasTemporais(duracao: number): {
+    shapes: Partial<Shape>[];
+    annotations: any[];
+  } {
+    const shapes: Partial<Shape>[] = [];
+    const annotations: any[] = [];
+
+    for (let t = 0; t <= duracao; t += 10) {
+      shapes.push({
+        type: "line",
+        x0: t,
+        x1: t,
+        yref: "paper",
+        y0: 0,
+        y1: 1,
+        line: { color: "black", width: 3, dash: "dot" },
+      });
+
+      annotations.push({
+        x: t - 0.15,
+        y: 0.95,
+        xref: "x",
+        yref: "paper",
+        text: formatarTempo(t),
+        showarrow: false,
+        font: { size: 14, color: "black" },
+        yanchor: "bottom",
+      });
+    }
+
+    return { shapes, annotations };
+  }
+
+  function handleRangeSliderRelayout(eventData: PlotRelayoutEvent) {
+    if (eventData["xaxis.range[0]"] && eventData["xaxis.range[1]"]) {
+      setLayoutSync({
+        xaxis: {
+          range: [eventData["xaxis.range[0]"], eventData["xaxis.range[1]"]],
+        },
+      });
+    }
+  }
+
+  const minhasAbas: TabItem[] = (ecgsSelecionados ?? []).map((dado, index) => {
     const { shapes, annotations } = gerarRetangulos(
       marcacoesSelecionadas,
       marcacoes,
       dado.periodSec
     );
+
+    const duracao = dado.valores.length * dado.periodSec;
+
+    const { shapes: linhasTempo, annotations: anotacoesTempo } =
+      gerarLinhasTemporais(duracao);
 
     return {
       title: dado.ecgDerivacao,
@@ -388,16 +455,28 @@ export default function DashboardEcgPage() {
           onHover={handleHover}
           onUnhover={handleUnhover}
           onClick={handleClick}
-          extraShapes={[...shapesSelecionados, ...shapes]}
-          extraAnnotations={[...(anotacao ? [anotacao] : []), ...annotations]}
+          extraShapes={[...shapesSelecionados, ...shapes, ...linhasTempo]}
+          extraAnnotations={[
+            ...(anotacao ? [anotacao] : []),
+            ...annotations,
+            ...anotacoesTempo,
+          ]}
           marcacoes={marcacoesSelecionadas}
         />
       ),
     };
   });
+  const dadosPrimeiraDerivacao = ecgsSelecionados ? ecgsSelecionados[0] : null;
 
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        overflow: "hidden",
+      }}
+    >
       <Toast ref={toast} />
       <LinhaVerticalMouse
         show={mostrarLinha}
@@ -405,14 +484,30 @@ export default function DashboardEcgPage() {
         thickness={2}
         zIndex={10}
       ></LinhaVerticalMouse>
-      <ContainerAbas
-        tabs={minhasAbas}
-        setVisivelEsquerda={setVisivelEsquerda}
-        tipoBatimentoSelecionado={tipoBatimentoSelecionado}
-        temMarcacoes={temMarcacoes()}
-        irParaProximoPonto={irParaProximoPonto}
-        irParaPontoAnterior={irParaPontoAnterior}
-      />
+
+      <div style={{ flexGrow: 1, minHeight: 0 }}>
+        <ContainerAbas
+          tabs={minhasAbas}
+          setVisivelEsquerda={setVisivelEsquerda}
+          tiposBatimentosSelecionados={tiposBatimentosSelecionados}
+          temMarcacoes={temMarcacoes()}
+          irParaProximoPonto={irParaProximoPonto}
+          irParaPontoAnterior={irParaPontoAnterior}
+          marcacoes={marcacoes}
+          mostrarSlider={mostrarSlider}
+          setMostrarSlider={setMostrarSlider}
+        />
+      </div>
+
+      {dadosPrimeiraDerivacao && mostrarSlider && (
+        <ECGRangeSlider
+          ecgData={dadosPrimeiraDerivacao}
+          layoutSync={layoutSync}
+          onRelayout={handleRangeSliderRelayout}
+          marcacoes={marcacoesSelecionadas}
+        />
+      )}
+
       <ConfiguracaoLateral
         visivelEsquerda={visivelEsquerda}
         setVisivelEsquerda={setVisivelEsquerda}
@@ -425,9 +520,9 @@ export default function DashboardEcgPage() {
         setMostrarLinha={setMostrarLinha}
         mostrarLinhaGrafico={mostrarLinhaGrafico}
         setMostrarLinhaGrafico={setMostrarLinhaGrafico}
-        tipoBatimentoSelecionado={tipoBatimentoSelecionado}
-        setTipoBatimentoSelecionado={setTipoBatimentoSelecionado}
+        tiposBatimentosSelecionados={tiposBatimentosSelecionados}
+        setTiposBatimentosSelecionados={setTiposBatimentosSelecionados}
       />
-    </>
+    </div>
   );
 }

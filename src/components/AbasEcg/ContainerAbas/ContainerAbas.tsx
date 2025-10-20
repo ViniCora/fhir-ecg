@@ -3,26 +3,36 @@ import "../AbasEcg.css";
 import AbasFechadas from "../AbasFechadas/AbasFechadas";
 import AbasAbertas from "../AbasAbertas/AbasAbertas";
 import type { TabItem } from "../../../types/TabItem/TabItem";
+import type { Marcacoes } from "../../../types/Marcacoes/Marcacoes";
 
 interface SideAccordionDockProps {
   tabs?: TabItem[];
   setVisivelEsquerda: (visivel: boolean) => void;
-  tipoBatimentoSelecionado: string;
+  tiposBatimentosSelecionados: string[];
   temMarcacoes: boolean;
   irParaProximoPonto: () => void;
   irParaPontoAnterior: () => void;
+  marcacoes: Marcacoes[];
+  mostrarSlider: boolean;
+  setMostrarSlider: (mostrar: boolean) => void;
 }
 
 export default function SideAccordionDock({
   tabs = [],
   setVisivelEsquerda,
-  tipoBatimentoSelecionado,
+  tiposBatimentosSelecionados,
   temMarcacoes,
   irParaProximoPonto,
   irParaPontoAnterior,
+  marcacoes,
+  mostrarSlider,
+  setMostrarSlider,
 }: SideAccordionDockProps) {
-  const totalHeight = window.innerHeight * 0.995;
-  const closedWidth = 45;
+  const totalHeight =
+    tabs.length == 0 || !mostrarSlider
+      ? window.innerHeight
+      : window.innerHeight * 0.88;
+  const closedWidth = 60;
 
   const [openTabs, setOpenTabs] = useState<number[]>([]);
   const [closedTabs, setClosedTabs] = useState<number[]>([]);
@@ -63,10 +73,13 @@ export default function SideAccordionDock({
         totalHeight={totalHeight}
         closedWidth={closedWidth}
         setVisivelEsquerda={setVisivelEsquerda}
-        tipoBatimentoSelecionado={tipoBatimentoSelecionado}
+        tiposBatimentosSelecionados={tiposBatimentosSelecionados}
         temMarcacoes={temMarcacoes}
         irParaProximoPonto={irParaProximoPonto}
         irParaPontoAnterior={irParaPontoAnterior}
+        marcacoes={marcacoes}
+        mostrarSlider={mostrarSlider}
+        setMostrarSlider={setMostrarSlider}
       />
       <AbasAbertas
         tabs={tabs}
