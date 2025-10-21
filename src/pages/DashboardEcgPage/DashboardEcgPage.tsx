@@ -90,7 +90,7 @@ export default function DashboardEcgPage() {
 
     let fhirEcgData: ECGData[] | null = null;
     try {
-      const observationId = "68c9715e083e7f44c6e203b0";
+      const observationId = "68e2b8588f0a1bdd34808a93";
       console.log("Attempting to load FHIR data...");
       fhirEcgData = await fhirService.getECGData(observationId);
 
