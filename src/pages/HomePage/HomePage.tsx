@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import FHIR from 'fhirclient';
 import axios from 'axios';
-import type { Observation } from 'fhir/r4';
+import type { Observation, Practitioner } from 'fhir/r4';
 import type Client from 'fhirclient/lib/Client';
 
 export default function HomePage() {
   const [fhirClient, setFhirClient] = useState<Client | null>(null);
+  const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,11 +16,21 @@ export default function HomePage() {
       try {
         const client = await FHIR.oauth2.ready();
         setFhirClient(client);
-        setLoading(false);
         console.log('FHIR Client authenticated:', client);
+        
+        // Try to fetch practitioner data, but don't fail if it's not available
+        try {
+          const practitionerData = await client.user.read();
+          setPractitioner(practitionerData as Practitioner);
+          console.log('Practitioner data:', practitionerData);
+        } catch (practitionerError) {
+          console.warn('Could not fetch practitioner data:', practitionerError);
+          // Continue anyway - authentication is still valid
+        }
+        
+        setLoading(false);
       } catch (error) {
         console.error('No FHIR authentication found:', error);
-        // Redirect to login if not authenticated
         window.location.href = '/';
       }
     };
@@ -41,7 +52,7 @@ export default function HomePage() {
       }
 
       // Use a sample observation ID - in a real app, this would come from user input or previous API calls
-      const observationId = '68c8c918083e7f44c6e202f1'; // Sample ID from the postman collection
+      const observationId = '68e2b8588f0a1bdd34808a93'; // Sample ID from the postman collection
       
       const observationData = await fhirClient.request<Observation>(`/Observation/${observationId}`)
       
@@ -164,7 +175,88 @@ export default function HomePage() {
     <div style={containerStyle}>
       <h1>Welcome!</h1>
       
-      <p>Patient ID: {fhirClient?.patient?.id || 'Not available'}</p>
+      {practitioner && (
+        <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+          <h3>Practitioner Details</h3>
+          <p><strong>ID:</strong> {practitioner.id || 'N/A'}</p>
+          <p><strong>Resource Type:</strong> {practitioner.resourceType || 'N/A'}</p>
+          
+          {practitioner.name && practitioner.name.length > 0 && (
+            <p>
+              <strong>Name:</strong>{' '}
+              {practitioner.name.map((n, i) => {
+                const parts = [
+                  ...(n.prefix || []),
+                  ...(n.given || []),
+                  n.family,
+                  ...(n.suffix || [])
+                ].filter(Boolean);
+                return <span key={i}>{parts.join(' ')}</span>;
+              })}
+            </p>
+          )}
+          
+          {practitioner.identifier && practitioner.identifier.length > 0 && (
+            <p>
+              <strong>Identifiers:</strong>{' '}
+              {practitioner.identifier.map((id, i) => (
+                <span key={i}>
+                  {id.system ? `${id.system}: ` : ''}{id.value || 'N/A'}
+                  {i < practitioner.identifier!.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </p>
+          )}
+          
+          {practitioner.telecom && practitioner.telecom.length > 0 && (
+            <p>
+              <strong>Contact:</strong>{' '}
+              {practitioner.telecom.map((t, i) => (
+                <span key={i}>
+                  {t.system ? `${t.system}: ` : ''}{t.value || 'N/A'}
+                  {i < practitioner.telecom!.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </p>
+          )}
+          
+          {practitioner.gender && (
+            <p><strong>Gender:</strong> {practitioner.gender}</p>
+          )}
+          
+          {practitioner.birthDate && (
+            <p><strong>Birth Date:</strong> {practitioner.birthDate}</p>
+          )}
+          
+          {practitioner.address && practitioner.address.length > 0 && (
+            <p>
+              <strong>Address:</strong>{' '}
+              {practitioner.address.map((addr, i) => {
+                const parts = [
+                  ...(addr.line || []),
+                  addr.city,
+                  addr.state,
+                  addr.postalCode,
+                  addr.country
+                ].filter(Boolean);
+                return <span key={i}>{parts.join(', ')}</span>;
+              })}
+            </p>
+          )}
+          
+          {practitioner.qualification && practitioner.qualification.length > 0 && (
+            <p>
+              <strong>Qualifications:</strong>{' '}
+              {practitioner.qualification.map((q, i) => (
+                <span key={i}>
+                  {q.code?.coding?.[0]?.display || q.code?.text || 'N/A'}
+                  {i < practitioner.qualification!.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
+      )}
 
       <div>
         <button 

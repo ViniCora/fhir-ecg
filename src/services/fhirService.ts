@@ -3,8 +3,35 @@ import FHIR from 'fhirclient';
 import type { Observation, Bundle, Resource } from 'fhir/r4';
 import type { ECGData } from '../types/ECGData/ECGData';
 
+// IFCloud API interfaces
+interface IFCloudScriptRequest {
+  resourceType: "Observation";
+  id: string;
+  scriptName: string;
+  returnOnlyFieldsComponents: true;
+  components: Array<{
+    index: string;
+    changeField: "data";
+  }>;
+}
+
+interface IFCloudScriptResponse {
+  origin: {
+    value: number;
+  };
+  period: number;
+  factor: number;
+  lowerLimit: number;
+  upperLimit: number;
+  dimensions: number;
+  data: string;
+}
+
 // FHIR Service configuration
 const FHIR_BASE_URL = 'http://hapi.fhir.org/baseR4';
+
+// IFCloud Service configuration
+const IFCLOUD_BASE_URL = 'https://if4health.charqueadas.ifsul.edu.br/ifcloud';
 
 // Create axios instance with default configuration
 const fhirClient = axios.create({
@@ -13,6 +40,15 @@ const fhirClient = axios.create({
   headers: {
     'Accept': 'application/fhir+json',
     'Content-Type': 'application/fhir+json',
+  },
+});
+
+// Create axios instance for IFCloud API
+const ifcloudClient = axios.create({
+  baseURL: IFCLOUD_BASE_URL,
+  timeout: 30000, // Longer timeout for script execution
+  headers: {
+    'Content-Type': 'application/json',
   },
 });
 
@@ -32,6 +68,26 @@ fhirClient.interceptors.response.use(
       // Something else happened
       console.error('Request Error:', error.message);
       throw new Error(`Request Error: ${error.message}`);
+    }
+  }
+);
+
+// Response interceptor for IFCloud error handling
+ifcloudClient.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  (error) => {
+    if (error.response) {
+      // Server responded with error status
+      console.error('IFCloud API Error:', error.response.status, error.response.data);
+      throw new Error(`IFCloud API Error: ${error.response.status} - ${error.response.statusText}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      console.error('IFCloud Network Error:', error.request);
+      throw new Error('Network Error: Unable to reach IFCloud server');
+    } else {
+      // Something else happened
+      console.error('IFCloud Request Error:', error.message);
+      throw new Error(`IFCloud Request Error: ${error.message}`);
     }
   }
 );
@@ -119,6 +175,47 @@ export class FhirService {
     }
   }
 
+  /**
+   * Call IFCloud script to process ECG data
+   * @param observationId - The ID of the observation to process
+   * @returns Promise<IFCloudScriptResponse[]>
+   */
+  async callIFCloudScript(observationId: string): Promise<IFCloudScriptResponse[]> {
+    try {
+      const requestPayload: IFCloudScriptRequest = {
+        resourceType: "Observation",
+        id: observationId,
+        scriptName: "calcBPM.py",
+        returnOnlyFieldsComponents: true,
+        components: [
+          {
+            index: "0",
+            changeField: "data"
+          },
+          {
+            index: "1",
+            changeField: "data"
+          }
+        ]
+      };
+
+      console.log('IFCloud request payload:', requestPayload);
+      
+      const response = await ifcloudClient.post<IFCloudScriptResponse[]>('/run_script/operation', requestPayload);
+      
+      console.log('IFCloud response:', response.data);
+      
+      if (!Array.isArray(response.data)) {
+        throw new Error('Expected array response from IFCloud API');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to call IFCloud script for observation ${observationId}:`, error);
+      throw error;
+    }
+  }
+
   private convertFhirToECGData(observation: Observation): ECGData[] {
     if (!observation.component) return [];
 
@@ -148,4 +245,4 @@ export class FhirService {
 export const fhirService = new FhirService();
 
 // Export types for convenience
-export type { Observation, Bundle, Resource };
+export type { Observation, Bundle, Resource, IFCloudScriptRequest, IFCloudScriptResponse };

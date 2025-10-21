@@ -12,8 +12,7 @@ export default function AuthPage() {
         setAuthStatus('pending');
         const client = await FHIR.oauth2.ready();
         console.log('FHIR Client authenticated:', client);
-        // Redirect to home page after successful authentication
-        window.location.href = '/home';
+        window.location.href = window.location.origin + '/home';
       } catch (error) {
         setAuthStatus('none');
         console.log('No FHIR authentication found, ready to start auth flow');
@@ -31,9 +30,9 @@ export default function AuthPage() {
 
       await FHIR.oauth2.authorize({
         clientId: 'adriano-utfpr',
-        scope: 'patient/*.rs',
-        redirectUri: window.location.origin + '/auth',
-        iss: 'https://if4health.charqueadas.ifsul.edu.br/biosignalinfhir',
+        scope: 'openid fhirUser user/*.crudsh',
+        redirectUri: window.location.origin + '/home',
+        iss: 'https://if4health.charqueadas.ifsul.edu.br/biofass',
         completeInTarget: true
       });
     } catch (error) {
@@ -74,7 +73,7 @@ export default function AuthPage() {
   if (authStatus === 'none') {
     return (
       <div style={containerStyle}>
-        <h1>FHIR ECG Authentication</h1>
+        <h1>FHIR ECG <br/> Practioner Authentication</h1>
         
         {error && (
           <div style={{ color: 'red', marginBottom: '20px' }}>
