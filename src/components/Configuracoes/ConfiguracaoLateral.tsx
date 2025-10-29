@@ -3,6 +3,7 @@ import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/MultiSelect";
 import { FloatLabel } from "primereact/FloatLabel";
 import { InputSwitch } from "primereact/InputSwitch";
+import React, { useMemo, useState } from "react";
 import type { Paciente } from "../../types/Paciente/Paciente";
 import type { ECGData } from "../../types/ECGData/ECGData";
 import { tiposBatimentos } from "../../types/TiposBatimentos/TiposBatimentos";
@@ -28,64 +29,98 @@ interface ConfiguracaoLateralProps {
 
   tiposBatimentosSelecionados: string[];
   setTiposBatimentosSelecionados: (v: string[]) => void;
+
+  maxMinutoECG: number;
+  onMinutoChange: (minuto: number) => void;
+  minutoAtual: number;
+
+  verGraficoInteiro: boolean;
+  onVerGraficoInteiroChange: (v: boolean) => void;
 }
 
-export default function ConfiguracaoLateral({
-  visivelEsquerda,
-  setVisivelEsquerda,
-  pacienteSelecionado,
-  setPacienteSelecionado,
-  ecgsSelecionados,
-  setEcgsSelecionados,
-  pacientes,
-  mostrarLinha,
-  setMostrarLinha,
-  mostrarLinhaGrafico,
-  setMostrarLinhaGrafico,
-  tiposBatimentosSelecionados,
-  setTiposBatimentosSelecionados,
-}: ConfiguracaoLateralProps) {
-  const tiposBatimentosOptions = Object.entries(tiposBatimentos).map(
-    ([key, value]) => ({
-      label: value,
-      value: key,
-      cor: coresPorTipo[key],
-    })
-  );
-
-  const optionTemplate = (option: any) => {
-    if (!option) return <span />;
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span
-          style={{
-            width: "12px",
-            height: "12px",
-            backgroundColor: option.cor,
-            borderRadius: "50%",
-            display: "inline-block",
-          }}
-        />
-        <span>{option.label}</span>
-      </div>
+const ConteudoSidebar = React.memo(
+  ({
+    pacienteSelecionado,
+    setPacienteSelecionado,
+    ecgsSelecionados,
+    setEcgsSelecionados,
+    pacientes,
+    mostrarLinha,
+    setMostrarLinha,
+    mostrarLinhaGrafico,
+    setMostrarLinhaGrafico,
+    tiposBatimentosSelecionados,
+    setTiposBatimentosSelecionados,
+    maxMinutoECG,
+    onMinutoChange,
+    minutoAtual,
+    verGraficoInteiro,
+    onVerGraficoInteiroChange,
+  }: Omit<
+    ConfiguracaoLateralProps,
+    "visivelEsquerda" | "setVisivelEsquerda"
+  >) => {
+    const [exameSelecionado, setExameSelecionado] = useState<string | null>(
+      null
     );
-  };
-  return (
-    <Sidebar
-      visible={visivelEsquerda}
-      position="left"
-      onHide={() => setVisivelEsquerda(false)}
-    >
-      <h2 style={{ paddingBottom: "20px" }}>Configurações</h2>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "initial",
-          gap: "30px",
-        }}
-      >
-        <div>
+
+    const examesMock = useMemo(() => {
+      const agora = new Date();
+      const opcoes = [];
+      for (let i = 0; i < 3; i++) {
+        const data = new Date(agora.getTime() - i * 3600_000);
+        const formatada = data.toLocaleString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        opcoes.push({
+          label: `Exame ${i + 1} - ${formatada}`,
+          value: formatada,
+        });
+      }
+      return opcoes;
+    }, []);
+
+    const tiposBatimentosOptions = Object.entries(tiposBatimentos).map(
+      ([key, value]) => ({
+        label: value,
+        value: key,
+        cor: coresPorTipo[key],
+      })
+    );
+
+    const optionTemplate = (option: any) => {
+      if (!option) return <span />;
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span
+            style={{
+              width: "12px",
+              height: "12px",
+              backgroundColor: option.cor,
+              borderRadius: "50%",
+              display: "inline-block",
+            }}
+          />
+          <span>{option.label}</span>
+        </div>
+      );
+    };
+
+    const minutoOptions = useMemo(() => {
+      return Array.from({ length: maxMinutoECG }, (_, i) => ({
+        label: `${i}m → ${i + 1}m`,
+        value: i,
+      }));
+    }, [maxMinutoECG]);
+
+    return (
+      <>
+        <h2 style={{ paddingBottom: "20px" }}>Configurações</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
           <FloatLabel>
             <Dropdown
               inputId="pacienteInput"
@@ -101,8 +136,19 @@ export default function ConfiguracaoLateral({
             />
             <label htmlFor="pacienteInput">Paciente</label>
           </FloatLabel>
-        </div>
-        <div>
+
+          <FloatLabel>
+            <Dropdown
+              inputId="exameInput"
+              placeholder="Selecione um Exame"
+              value={exameSelecionado}
+              onChange={(e) => setExameSelecionado(e.value)}
+              options={examesMock}
+              style={{ width: "90%" }}
+            />
+            <label htmlFor="exameInput">Exame</label>
+          </FloatLabel>
+
           <FloatLabel>
             <MultiSelect
               value={ecgsSelecionados}
@@ -114,74 +160,108 @@ export default function ConfiguracaoLateral({
             />
             <label htmlFor="ms-cities">Derivações</label>
           </FloatLabel>
-        </div>
-        <FloatLabel>
-          <MultiSelect
-            inputId="tipoMarcacao"
-            placeholder="Selecione um ou mais Tipos"
-            showClear={tiposBatimentosSelecionados.length > 0}
-            value={tiposBatimentosSelecionados}
-            onChange={(e) => setTiposBatimentosSelecionados(e.value)}
-            options={tiposBatimentosOptions ?? []}
-            optionLabel="label"
-            itemTemplate={optionTemplate}
-            filter
-            selectedItemTemplate={(value) => {
-              if (!value) return null;
-              const opt = tiposBatimentosOptions.find((o) => o.value === value);
-              if (!opt) return null;
 
-              return (
-                <span
-                  style={{
-                    backgroundColor: opt.cor,
-                    color: "#fff",
-                    padding: "2px 6px",
-                    borderRadius: "6px",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  {opt.label}
-                </span>
-              );
-            }}
-            style={{ width: "90%" }}
-          />
-          <label htmlFor="tipoMarcacao">Tipos Batimentos</label>
-        </FloatLabel>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "initial",
-          }}
-        >
-          <label htmlFor="switch1" style={{ paddingRight: "15px" }}>
-            Mostrar Linha na Tela?
-          </label>
-          <InputSwitch
-            inputId="switch1"
-            checked={mostrarLinha}
-            onChange={(e) => setMostrarLinha(e.value)}
-          />
+          <FloatLabel>
+            <MultiSelect
+              inputId="tipoMarcacao"
+              placeholder="Selecione um ou mais Tipos"
+              showClear={tiposBatimentosSelecionados.length > 0}
+              value={tiposBatimentosSelecionados}
+              onChange={(e) => setTiposBatimentosSelecionados(e.value)}
+              options={tiposBatimentosOptions ?? []}
+              optionLabel="label"
+              itemTemplate={optionTemplate}
+              filter
+              selectedItemTemplate={(value) => {
+                if (!value) return null;
+                const opt = tiposBatimentosOptions.find(
+                  (o) => o.value === value
+                );
+                if (!opt) return null;
+
+                return (
+                  <span
+                    style={{
+                      backgroundColor: opt.cor,
+                      color: "#fff",
+                      padding: "2px 6px",
+                      borderRadius: "6px",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {opt.label}
+                  </span>
+                );
+              }}
+              style={{ width: "90%" }}
+            />
+            <label htmlFor="tipoMarcacao">Tipos Batimentos</label>
+          </FloatLabel>
+
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <label htmlFor="switchVerGrafico" style={{ paddingRight: "15px" }}>
+              Ver gráfico inteiro
+            </label>
+            <InputSwitch
+              inputId="switchVerGrafico"
+              checked={verGraficoInteiro}
+              onChange={(e) => onVerGraficoInteiroChange(e.value)}
+            />
+          </div>
+
+          {!verGraficoInteiro && (
+            <FloatLabel>
+              <Dropdown
+                inputId="minutoInput"
+                placeholder="Selecione o minuto"
+                value={minutoAtual}
+                onChange={(e) => onMinutoChange(e.value)}
+                options={minutoOptions}
+                style={{ width: "90%" }}
+              />
+              <label htmlFor="minutoInput">Faixa de 1 minuto</label>
+            </FloatLabel>
+          )}
+
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <label htmlFor="switch1" style={{ paddingRight: "15px" }}>
+              Mostrar Linha na Tela?
+            </label>
+            <InputSwitch
+              inputId="switch1"
+              checked={mostrarLinha}
+              onChange={(e) => setMostrarLinha(e.value)}
+            />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <label htmlFor="switch2" style={{ paddingRight: "15px" }}>
+              Mostrar Linha no Gráfico?
+            </label>
+            <InputSwitch
+              inputId="switch2"
+              checked={mostrarLinhaGrafico}
+              onChange={(e) => setMostrarLinhaGrafico(e.value)}
+            />
+          </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "initial",
-          }}
-        >
-          <label htmlFor="switch2" style={{ paddingRight: "15px" }}>
-            Mostrar Linha no Gráfico?
-          </label>
-          <InputSwitch
-            inputId="switch2"
-            checked={mostrarLinhaGrafico}
-            onChange={(e) => setMostrarLinhaGrafico(e.value)}
-          />
-        </div>
-      </div>
+      </>
+    );
+  }
+);
+
+export default function ConfiguracaoLateral({
+  visivelEsquerda,
+  setVisivelEsquerda,
+  ...rest
+}: ConfiguracaoLateralProps) {
+  return (
+    <Sidebar
+      visible={visivelEsquerda}
+      position="left"
+      onHide={() => setVisivelEsquerda(false)}
+    >
+      <ConteudoSidebar {...rest} />
     </Sidebar>
   );
 }

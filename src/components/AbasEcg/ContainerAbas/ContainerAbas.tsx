@@ -31,7 +31,7 @@ export default function SideAccordionDock({
   const totalHeight =
     tabs.length == 0 || !mostrarSlider
       ? window.innerHeight
-      : window.innerHeight * 0.88;
+      : window.innerHeight * 0.85;
   const closedWidth = 60;
 
   const [openTabs, setOpenTabs] = useState<number[]>([]);

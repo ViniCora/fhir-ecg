@@ -35,8 +35,10 @@ export function LinhaVerticalMouse({
 
           if (scope === "element" && containerRef?.current) {
             const rect = containerRef.current.getBoundingClientRect();
-            const withinX = Math.min(Math.max(lastEvent.clientX, rect.left), rect.right);
-            // Oculta se o mouse estiver fora vertical/horizontal do contêiner
+            const withinX = Math.min(
+              Math.max(lastEvent.clientX, rect.left),
+              rect.right
+            );
             if (
               lastEvent.clientX < rect.left ||
               lastEvent.clientX > rect.right ||
