@@ -26,7 +26,9 @@ export default function DashboardEcgPage() {
   const [visivelEsquerda, setVisivelEsquerda] = useState(false);
   const [mostrarLinha, setMostrarLinha] = useState(false);
   const [mostrarLinhaGrafico, setMostrarLinhaGrafico] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente>({} as Paciente);
+  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente>(
+    {} as Paciente
+  );
   const [ecgsSelecionados, setEcgsSelecionados] = useState<ECGData[] | null>(
     null
   );
@@ -111,39 +113,33 @@ export default function DashboardEcgPage() {
     setPacientes(pacientes);
   }
 
-
   function temMarcacoes(): boolean {
     return marcacoesSelecionadas.length > 0;
   }
 
-  // ================= DADOS VISÍVEIS (1 MINUTO) =================
+  // ================= DADOS VISÍVEIS (1 MINUTO OU INTEIRO) =================
   useEffect(() => {
     if (!ecgsSelecionados) return;
 
     if (verGraficoInteiro) {
       setDadosVisiveis(ecgsSelecionados);
-      setMinutoAtual(0);
-      setLayoutSync((prev) => ({
-        ...prev,
-        xaxis: { ...(prev.xaxis ?? {}), range: [0, 10] },
-      }));
       return;
     }
+    const offset = minutoAtual * 60;
 
     const novosDados = ecgsSelecionados.map((ecg) => {
-      const start = minutoAtual * 60;
-      const end = (minutoAtual + 1) * 60;
-      const startIndex = Math.floor(start / ecg.periodSec);
-      const endIndex = Math.floor(end / ecg.periodSec);
-      const fatia = ecg.valores.slice(startIndex, endIndex);
-      return { ...ecg, valores: fatia };
+      const start = Math.floor(offset / ecg.periodSec);
+      const end = Math.floor((offset + 60) / ecg.periodSec);
+      const fatia = ecg.valores.slice(start, end);
+
+      return {
+        ...ecg,
+        valores: fatia,
+        tempoInicial: offset,
+      };
     });
 
     setDadosVisiveis(novosDados);
-    setLayoutSync((prev) => ({
-      ...prev,
-      xaxis: { ...(prev.xaxis ?? {}), range: [0, 10] },
-    }));
   }, [ecgsSelecionados, minutoAtual, verGraficoInteiro]);
 
   //==================================================//
@@ -235,10 +231,18 @@ export default function DashboardEcgPage() {
     setAnotacao(novaAnotacao);
   }
 
+  /**
+   * Gera retângulos/annotations para as marcações selecionadas, mas:
+   * - converte tempo absoluto (sample * periodSec) para o espaço do gráfico visível
+   *   subtraindo `offsetSeconds`
+   * - filtra apenas as que interceptam [0, duracao]
+   */
   function gerarRetangulos(
     marcacoesSelecionadas: { sample: number; tipo: string }[],
     todasMarcacoes: { sample: number; tipo: string }[],
-    periodSec: number
+    periodSec: number,
+    offsetSeconds: number,
+    duracao: number
   ): { shapes: Partial<Shape>[]; annotations: any[] } {
     const retangulos: Partial<Shape>[] = [];
     const anotacoes: any[] = [];
@@ -247,25 +251,36 @@ export default function DashboardEcgPage() {
       const proximo = todasMarcacoes.find((m) => m.sample > batimento.sample);
       if (!proximo) return;
 
-      const x1 = batimento.sample * periodSec;
-      const x2 = proximo.sample * periodSec;
+      const absX1 = batimento.sample * periodSec;
+      const absX2 = proximo.sample * periodSec;
+
+      const x1Visivel = absX1 - offsetSeconds;
+      const x2Visivel = absX2 - offsetSeconds;
+
+      if (x2Visivel <= 0 || x1Visivel >= duracao) {
+        return;
+      }
+
+      const x1Clipped = Math.max(0, x1Visivel);
+      const x2Clipped = Math.min(duracao, x2Visivel);
 
       retangulos.push(
         criarRetangulo(
-          x1,
-          x2,
+          x1Clipped,
+          x2Clipped,
           coresPorTipo[batimento.tipo] ?? "rgba(0,200,255,0.2)"
         )
       );
 
-      anotacoes.push(criarAnotacao(x1, x2, 0.9));
+      anotacoes.push(criarAnotacao(x1Clipped, x2Clipped, 0.9));
     });
 
     return { shapes: retangulos, annotations: anotacoes };
   }
 
   function centralizarNoPonto(sample: number, periodSec: number) {
-    const x = sample * periodSec;
+    const offset = dadosVisiveis?.[0]?.tempoInicial ?? 0;
+    const x = sample * periodSec - offset;
 
     const rangeAtual = layoutSync.xaxis?.range ?? [x - 1, x + 1];
     const largura = rangeAtual[1] - rangeAtual[0];
@@ -430,21 +445,26 @@ export default function DashboardEcgPage() {
   }
 
   // ================= ABAS =================
-  const minhasAbas: TabItem[] = (ecgsSelecionados ?? []).map((dado, index) => {
+  const minhasAbas: TabItem[] = (dadosVisiveis ?? []).map((dado) => {
+    const duracao = dado.valores.length * dado.periodSec;
+    const offset = dado.tempoInicial ?? minutoAtual * 60;
+
     const { shapes, annotations } = gerarRetangulos(
       marcacoesSelecionadas,
       marcacoes,
-      dado.periodSec
+      dado.periodSec,
+      offset,
+      duracao
     );
-    const duracao = dado.valores.length * dado.periodSec;
+
     const { shapes: linhasTempo, annotations: anotacoesTempo } =
-      gerarLinhasTemporais(duracao, minutoAtual * 60);
+      gerarLinhasTemporais(duracao, offset);
     return {
       title: dado.ecgDerivacao,
       content: (
         <ECGPlot
           key={dado.ecgDerivacao}
-          ecgData={dado}
+          ecgData={dado} // agora só 1 minuto!
           layoutSync={layoutSync}
           cursorX={cursorX}
           onRelayout={handleRelayout}
