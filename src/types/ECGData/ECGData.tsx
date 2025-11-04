@@ -3,4 +3,5 @@ export interface ECGData {
   valores: number[];
   periodSec: number;
   tempo?: number[];
+  tempoInicial: number;
 }
