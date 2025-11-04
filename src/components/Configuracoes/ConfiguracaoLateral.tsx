@@ -3,8 +3,9 @@ import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/MultiSelect";
 import { FloatLabel } from "primereact/FloatLabel";
 import { InputSwitch } from "primereact/InputSwitch";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import type { Paciente } from "../../types/Paciente/Paciente";
+import type { ECGRecording } from "../../types/ECGRecording/ECGRecording";
 import type { ECGData } from "../../types/ECGData/ECGData";
 import { tiposBatimentos } from "../../types/TiposBatimentos/TiposBatimentos";
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
@@ -13,8 +14,11 @@ interface ConfiguracaoLateralProps {
   visivelEsquerda: boolean;
   setVisivelEsquerda: (value: boolean) => void;
 
-  pacienteSelecionado: Paciente;
-  setPacienteSelecionado: (p: Paciente) => void;
+  pacienteSelecionado: Paciente | null;
+  setPacienteSelecionado: (p: Paciente | null) => void;
+
+  recordingSelecionado: ECGRecording | null;
+  setRecordingSelecionado: (r: ECGRecording | null) => void;
 
   ecgsSelecionados: ECGData[] | null;
   setEcgsSelecionados: (e: ECGData[] | null) => void;
@@ -42,6 +46,8 @@ const ConteudoSidebar = React.memo(
   ({
     pacienteSelecionado,
     setPacienteSelecionado,
+    recordingSelecionado,
+    setRecordingSelecionado,
     ecgsSelecionados,
     setEcgsSelecionados,
     pacientes,
@@ -60,29 +66,24 @@ const ConteudoSidebar = React.memo(
     ConfiguracaoLateralProps,
     "visivelEsquerda" | "setVisivelEsquerda"
   >) => {
-    const [exameSelecionado, setExameSelecionado] = useState<string | null>(
-      null
-    );
-
-    const examesMock = useMemo(() => {
-      const agora = new Date();
-      const opcoes = [];
-      for (let i = 0; i < 3; i++) {
-        const data = new Date(agora.getTime() - i * 3600_000);
-        const formatada = data.toLocaleString("pt-BR", {
+    const recordingOptions = useMemo(() => {
+      if (!pacienteSelecionado) return [];
+      
+      return pacienteSelecionado.recordings.map((recording) => {
+        const date = new Date(recording.date);
+        const formattedDate = date.toLocaleString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
           hour: "2-digit",
           minute: "2-digit",
         });
-        opcoes.push({
-          label: `Exame ${i + 1} - ${formatada}`,
-          value: formatada,
-        });
-      }
-      return opcoes;
-    }, []);
+        return {
+          label: `Exame - ${formattedDate}`,
+          value: recording,
+        };
+      });
+    }, [pacienteSelecionado]);
 
     const tiposBatimentosOptions = Object.entries(tiposBatimentos).map(
       ([key, value]) => ({
@@ -128,6 +129,7 @@ const ConteudoSidebar = React.memo(
               value={pacienteSelecionado}
               onChange={(e) => {
                 setPacienteSelecionado(e.value);
+                setRecordingSelecionado(null);
                 setEcgsSelecionados(null);
               }}
               options={pacientes ?? []}
@@ -141,9 +143,13 @@ const ConteudoSidebar = React.memo(
             <Dropdown
               inputId="exameInput"
               placeholder="Selecione um Exame"
-              value={exameSelecionado}
-              onChange={(e) => setExameSelecionado(e.value)}
-              options={examesMock}
+              value={recordingSelecionado}
+              onChange={(e) => {
+                setRecordingSelecionado(e.value);
+                setEcgsSelecionados(null);
+              }}
+              options={recordingOptions}
+              optionLabel="label"
               style={{ width: "90%" }}
             />
             <label htmlFor="exameInput">Exame</label>
@@ -153,7 +159,7 @@ const ConteudoSidebar = React.memo(
             <MultiSelect
               value={ecgsSelecionados}
               onChange={(e) => setEcgsSelecionados(e.value)}
-              options={pacienteSelecionado?.ecgs ?? []}
+              options={recordingSelecionado?.leads ?? []}
               optionLabel="ecgDerivacao"
               maxSelectedLabels={6}
               style={{ width: "90%" }}

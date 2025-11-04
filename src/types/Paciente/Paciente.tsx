@@ -1,8 +1,6 @@
-import type { ECGData } from "../ECGData/ECGData";
-import type { Marcacoes } from "../Marcacoes/Marcacoes";
+import type { ECGRecording } from "../ECGRecording/ECGRecording";
 
 export interface Paciente {
   nome: string;
-  ecgs: ECGData[];
-  marcacoes?: Marcacoes[];
+  recordings: ECGRecording[];
 }

@@ -1,7 +1,8 @@
 import { fhirService } from './fhirService';
 import type { Paciente } from '../types/Paciente/Paciente';
+import type { ECGRecording } from '../types/ECGRecording/ECGRecording';
 import type { ECGData } from '../types/ECGData/ECGData';
-import type { Marcacoes } from '../types/Marcacoes/Marcacoes';
+import type { Annotations } from '../types/Annotations/Annotations';
 import type { Patient, Observation } from 'fhir/r4';
 
 interface FhirResourcesConfig {
@@ -43,40 +44,50 @@ async function loadLocalPatients(): Promise<Paciente[]> {
     const localPatients: Paciente[] = [];
 
     for (const patient of localResources.patients) {
-      const patientEcgs: ECGData[] = [];
-      let patientAnnotations: Marcacoes[] | undefined = undefined;
+      const recordings: ECGRecording[] = [];
 
       for (const resource of patient.resources) {
         if (resource.type === 'Observation' && resource.subtype === 'ecg' && resource.filename) {
           try {
             const observation = await loadLocalObservation(resource.filename);
-            const ecgData = convertFhirToECGData(observation);
-            if (ecgData.length > 0) {
-              patientEcgs.push(...ecgData);
+            const leads = convertFhirToECGData(observation);
+            
+            if (leads.length > 0) {
+              let annotations: Annotations | undefined = undefined;
+
+              if (resource.annotationsFilename) {
+                try {
+                  const annotationObservation = await loadLocalObservation(resource.annotationsFilename);
+                  const loadedAnnotations = convertFhirToAnnotations(annotationObservation);
+                  if (Object.keys(loadedAnnotations).length > 0) {
+                    annotations = loadedAnnotations;
+                  }
+                } catch (error) {
+                  console.error(`Failed to load local annotations ${resource.annotationsFilename}:`, error);
+                }
+              }
+
+              const date = observation.effectivePeriod?.start || new Date().toISOString();
+              
+              recordings.push({
+                id: resource.id,
+                date: date,
+                leads: leads,
+                annotations: annotations,
+              });
             }
           } catch (error) {
             console.error(`Failed to load local resource ${resource.filename}:`, error);
           }
-
-          if (resource.annotationsFilename) {
-            try {
-              const annotationObservation = await loadLocalObservation(resource.annotationsFilename);
-              const annotations = convertFhirToAnnotations(annotationObservation);
-              if (annotations.length > 0) {
-                patientAnnotations = annotations;
-              }
-            } catch (error) {
-              console.error(`Failed to load local annotations ${resource.annotationsFilename}:`, error);
-            }
-          }
         }
       }
 
-      if (patientEcgs.length > 0) {
+      if (recordings.length > 0) {
+        recordings.sort((a, b) => b.date.localeCompare(a.date));
+        
         localPatients.push({
           nome: patient.name || `Local Patient ${patient.id}`,
-          ecgs: patientEcgs,
-          marcacoes: patientAnnotations,
+          recordings: recordings,
         });
       }
     }
@@ -111,34 +122,46 @@ async function loadRemotePatients(): Promise<Paciente[]> {
     const configPatients: Paciente[] = [];
 
     for (const patient of serverResources.patients) {
-      const patientEcgs: ECGData[] = [];
-      let patientAnnotations: Marcacoes[] | undefined = undefined;
+      const recordings: ECGRecording[] = [];
 
       for (const resource of patient.resources) {
         if (resource.type === 'Observation' && resource.subtype === 'ecg') {
           try {
-            const ecgData = await getECGData(resource.id);
-            if (ecgData) {
-              patientEcgs.push(...ecgData);
+            const observation = await fhirService.getObservation(resource.id);
+            const leads = convertFhirToECGData(observation);
+            
+            if (leads.length > 0) {
+              let annotations: Annotations | undefined = undefined;
+
+              if (resource.annotationsId) {
+                try {
+                  const loadedAnnotations = await getAnnotations(resource.annotationsId);
+                  if (Object.keys(loadedAnnotations).length > 0) {
+                    annotations = loadedAnnotations;
+                  }
+                } catch (error) {
+                  console.error(`Failed to load annotations ${resource.annotationsId}:`, error);
+                }
+              }
+
+              const date = observation.effectivePeriod?.start || new Date().toISOString();
+              
+              recordings.push({
+                id: resource.id,
+                date: date,
+                leads: leads,
+                annotations: annotations,
+              });
             }
           } catch (error) {
             console.error(`Failed to load resource ${resource.id}:`, error);
           }
-
-          if (resource.annotationsId) {
-            try {
-              const annotations = await getAnnotations(resource.annotationsId);
-              if (annotations && annotations.length > 0) {
-                patientAnnotations = annotations;
-              }
-            } catch (error) {
-              console.error(`Failed to load annotations ${resource.annotationsId}:`, error);
-            }
-          }
         }
       }
 
-      if (patientEcgs.length > 0) {
+      if (recordings.length > 0) {
+        recordings.sort((a, b) => b.date.localeCompare(a.date));
+        
         let patientName = `Patient ${patient.id}`;
         
         try {
@@ -150,8 +173,7 @@ async function loadRemotePatients(): Promise<Paciente[]> {
 
         configPatients.push({
           nome: patientName,
-          ecgs: patientEcgs,
-          marcacoes: patientAnnotations,
+          recordings: recordings,
         });
       }
     }
@@ -220,10 +242,10 @@ async function getECGData(observationId: string): Promise<ECGData[]> {
   }
 }
 
-function convertFhirToAnnotations(observation: Observation): Marcacoes[] {
-  if (!observation.component) return [];
+function convertFhirToAnnotations(observation: Observation): Annotations {
+  if (!observation.component) return {};
 
-  const annotations: Marcacoes[] = [];
+  const annotations: Annotations = {};
 
   observation.component.forEach((comp) => {
     const coding = comp.code?.coding?.[0];
@@ -235,26 +257,22 @@ function convertFhirToAnnotations(observation: Observation): Marcacoes[] {
         .trim()
         .split(' ')
         .map(s => parseInt(s.trim()))
-        .filter(n => !isNaN(n));
+        .filter(n => !isNaN(n))
+        .sort((a, b) => a - b);
       
-      sampleNumbers.forEach(sample => {
-        annotations.push({
-          sample: sample,
-          tipo: annotationType
-        });
-      });
+      annotations[annotationType] = sampleNumbers;
     }
   });
 
-  return annotations.sort((a, b) => a.sample - b.sample);
+  return annotations;
 }
 
-async function getAnnotations(observationId: string): Promise<Marcacoes[]> {
+async function getAnnotations(observationId: string): Promise<Annotations> {
   try {
     const observation = await fhirService.getObservation(observationId);
     const annotations = convertFhirToAnnotations(observation);
     
-    if (annotations.length === 0) {
+    if (Object.keys(annotations).length === 0) {
       throw new Error(`No annotations found in observation ${observationId}`);
     }
     

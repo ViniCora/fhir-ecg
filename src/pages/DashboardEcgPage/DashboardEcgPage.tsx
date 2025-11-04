@@ -12,12 +12,13 @@ import type {
 import { LinhaVerticalMouse } from "../../components/LinhaVerticalMouse/LinhaVerticalMouse";
 import type { TabItem } from "../../types/TabItem/TabItem";
 import type { Paciente } from "../../types/Paciente/Paciente";
+import type { ECGRecording } from "../../types/ECGRecording/ECGRecording";
 import type { ECGData } from "../../types/ECGData/ECGData";
 import ConfiguracaoLateral from "../../components/Configuracoes/ConfiguracaoLateral";
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
 import { Toast } from "primereact/toast";
 import { patientService } from "../../services/patientService";
-import type { Marcacoes } from "../../types/Marcacoes/Marcacoes";
+import type { Annotations } from "../../types/Annotations/Annotations";
 import ECGRangeSlider from "../../components/ECGRangeSlider/ECGRangeSlider";
 
 export default function DashboardEcgPage() {
@@ -26,7 +27,8 @@ export default function DashboardEcgPage() {
   const [visivelEsquerda, setVisivelEsquerda] = useState(false);
   const [mostrarLinha, setMostrarLinha] = useState(false);
   const [mostrarLinhaGrafico, setMostrarLinhaGrafico] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente>({} as Paciente);
+  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
+  const [recordingSelecionado, setRecordingSelecionado] = useState<ECGRecording | null>(null);
   const [ecgsSelecionados, setEcgsSelecionados] = useState<ECGData[] | null>(
     null
   );
@@ -36,10 +38,11 @@ export default function DashboardEcgPage() {
     Partial<Shape>[]
   >([]);
   const [anotacao, setAnotacao] = useState<any | null>(null);
-  const [marcacoes, setMarcacoes] = useState<Marcacoes[]>([]);
-  const [marcacoesSelecionadas, setMarcacoesSelecionadas] = useState<
-    Marcacoes[]
-  >([]);
+  const [marcacoes, setMarcacoes] = useState<Annotations>({});
+  const [marcacoesSelecionadas, setMarcacoesSelecionadas] = useState<{
+    sample: number;
+    tipo: string;
+  }[]>([]);
   const [tiposBatimentosSelecionados, setTiposBatimentosSelecionados] =
     useState<string[]>([]);
   const toast = useRef<Toast>(null);
@@ -55,12 +58,12 @@ export default function DashboardEcgPage() {
   }, []);
 
   useEffect(() => {
-    if (pacienteSelecionado && pacienteSelecionado.marcacoes) {
-      setMarcacoes(pacienteSelecionado.marcacoes);
+    if (recordingSelecionado && recordingSelecionado.annotations) {
+      setMarcacoes(recordingSelecionado.annotations);
     } else {
-      setMarcacoes([]);
+      setMarcacoes({});
     }
-  }, [pacienteSelecionado]);
+  }, [recordingSelecionado]);
 
   useEffect(() => {
     if (
@@ -72,9 +75,18 @@ export default function DashboardEcgPage() {
       return;
     }
 
-    const filtradas = marcacoes.filter((m) =>
-      tiposBatimentosSelecionados.includes(m.tipo)
-    );
+    const filtradas: { sample: number; tipo: string }[] = [];
+    
+    tiposBatimentosSelecionados.forEach((tipo) => {
+      const samples = marcacoes[tipo];
+      if (samples) {
+        samples.forEach((sample) => {
+          filtradas.push({ sample, tipo });
+        });
+      }
+    });
+
+    filtradas.sort((a, b) => a.sample - b.sample);
 
     if (filtradas.length > 0) {
       toast.current?.show({
@@ -430,10 +442,18 @@ export default function DashboardEcgPage() {
   }
 
   // ================= ABAS =================
+  const todasMarcacoesArray: { sample: number; tipo: string }[] = [];
+  Object.entries(marcacoes).forEach(([tipo, samples]) => {
+    samples.forEach((sample) => {
+      todasMarcacoesArray.push({ sample, tipo });
+    });
+  });
+  todasMarcacoesArray.sort((a, b) => a.sample - b.sample);
+
   const minhasAbas: TabItem[] = (ecgsSelecionados ?? []).map((dado, index) => {
     const { shapes, annotations } = gerarRetangulos(
       marcacoesSelecionadas,
-      marcacoes,
+      todasMarcacoesArray,
       dado.periodSec
     );
     const duracao = dado.valores.length * dado.periodSec;
@@ -519,6 +539,8 @@ export default function DashboardEcgPage() {
         setVisivelEsquerda={setVisivelEsquerda}
         pacienteSelecionado={pacienteSelecionado}
         setPacienteSelecionado={setPacienteSelecionado}
+        recordingSelecionado={recordingSelecionado}
+        setRecordingSelecionado={setRecordingSelecionado}
         ecgsSelecionados={ecgsSelecionados}
         setEcgsSelecionados={setEcgsSelecionados}
         pacientes={pacientes}

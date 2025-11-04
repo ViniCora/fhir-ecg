@@ -3,7 +3,7 @@ import { Button } from "primereact/button";
 import type { TabItem } from "../../../types/TabItem/TabItem";
 import { useState } from "react";
 import ChartsDialog from "../../ChartsDialog/ChartsDialog";
-import type { Marcacoes } from "../../../types/Marcacoes/Marcacoes";
+import type { Annotations } from "../../../types/Annotations/Annotations";
 
 interface AbasFechadasProps {
   tabs: TabItem[];
@@ -16,7 +16,7 @@ interface AbasFechadasProps {
   temMarcacoes: boolean;
   irParaProximoPonto: () => void;
   irParaPontoAnterior: () => void;
-  marcacoes: Marcacoes[];
+  marcacoes: Annotations;
   mostrarSlider: boolean;
   setMostrarSlider: (mostrar: boolean) => void;
 }
@@ -58,7 +58,7 @@ export default function AbasFechadas({
           outlined
           tooltip="Informações do exame"
           className="button-dock-closed"
-          visible={marcacoes.length > 0}
+          visible={Object.keys(marcacoes).length > 0}
           onClick={() => setMostrarDialog(true)}
         />
         <Button

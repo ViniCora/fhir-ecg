@@ -41,6 +41,13 @@
             "subtype": "ecg",
             "filename": "100_fhir.json",
             "annotationsFilename": "100_annotations_fhir.json"
+          },
+          {
+            "id": "mitdb_105",
+            "type": "Observation",
+            "subtype": "ecg",
+            "filename": "105_fhir.json",
+            "annotationsFilename": "105_annotations_fhir.json"
           }
         ]
       },
@@ -54,6 +61,13 @@
             "subtype": "ecg",
             "filename": "200_fhir.json",
             "annotationsFilename": "200_annotations_fhir.json"
+          },
+          {
+            "id": "mitdb_230",
+            "type": "Observation",
+            "subtype": "ecg",
+            "filename": "230_fhir.json",
+            "annotationsFilename": "230_annotations_fhir.json"
           }
         ]
       }

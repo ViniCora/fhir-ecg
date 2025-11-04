@@ -3,7 +3,7 @@ import "../AbasEcg.css";
 import AbasFechadas from "../AbasFechadas/AbasFechadas";
 import AbasAbertas from "../AbasAbertas/AbasAbertas";
 import type { TabItem } from "../../../types/TabItem/TabItem";
-import type { Marcacoes } from "../../../types/Marcacoes/Marcacoes";
+import type { Annotations } from "../../../types/Annotations/Annotations";
 
 interface SideAccordionDockProps {
   tabs?: TabItem[];
@@ -12,7 +12,7 @@ interface SideAccordionDockProps {
   temMarcacoes: boolean;
   irParaProximoPonto: () => void;
   irParaPontoAnterior: () => void;
-  marcacoes: Marcacoes[];
+  marcacoes: Annotations;
   mostrarSlider: boolean;
   setMostrarSlider: (mostrar: boolean) => void;
 }

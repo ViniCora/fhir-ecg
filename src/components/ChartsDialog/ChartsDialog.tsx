@@ -2,13 +2,13 @@ import { Dialog } from "primereact/dialog";
 import { Chart } from "primereact/chart";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
-import type { Marcacoes } from "../../types/Marcacoes/Marcacoes";
+import type { Annotations } from "../../types/Annotations/Annotations";
 import { tiposBatimentos } from "../../types/TiposBatimentos/TiposBatimentos";
 
 interface ChartsDialogProps {
   mostrarModal: boolean;
   setMostrarModal: (p: boolean) => void;
-  marcacoes: Marcacoes[];
+  marcacoes: Annotations;
 }
 
 export default function ChartsDialog({
@@ -16,10 +16,10 @@ export default function ChartsDialog({
   setMostrarModal,
   marcacoes,
 }: ChartsDialogProps) {
-  const contagemPorTipo: Record<string, number> = marcacoes.reduce((acc, m) => {
-    acc[m.tipo] = (acc[m.tipo] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const contagemPorTipo: Record<string, number> = {};
+  Object.entries(marcacoes).forEach(([tipo, samples]) => {
+    contagemPorTipo[tipo] = samples.length;
+  });
 
   const labels = Object.keys(contagemPorTipo);
 
