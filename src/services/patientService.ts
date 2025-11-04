@@ -1,23 +1,94 @@
 import { fhirService } from './fhirService';
 import type { Paciente } from '../types/Paciente/Paciente';
 import type { ECGData } from '../types/ECGData/ECGData';
+import type { Marcacoes } from '../types/Marcacoes/Marcacoes';
 import type { Patient, Observation } from 'fhir/r4';
 
 interface FhirResourcesConfig {
   [serverId: string]: {
     patients: Array<{
       id: string;
+      name?: string;
       resources: Array<{
         id: string;
         type: string;
         subtype?: string;
         annotationsId?: string;
+        filename?: string;
+        annotationsFilename?: string;
       }>;
     }>;
   };
 }
 
-async function loadPatientsFromConfig(): Promise<Paciente[]> {
+async function loadLocalObservation(filename: string): Promise<Observation> {
+  const response = await fetch(`/resources/${filename}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load local resource: ${filename}`);
+  }
+  return await response.json();
+}
+
+async function loadLocalPatients(): Promise<Paciente[]> {
+  try {
+    const response = await fetch('/config/fhir-resources.json');
+    const resourcesConfig: FhirResourcesConfig = await response.json();
+
+    const localResources = resourcesConfig['local'];
+    if (!localResources || !localResources.patients) {
+      console.log('No local resources found');
+      return [];
+    }
+
+    const localPatients: Paciente[] = [];
+
+    for (const patient of localResources.patients) {
+      const patientEcgs: ECGData[] = [];
+      let patientAnnotations: Marcacoes[] | undefined = undefined;
+
+      for (const resource of patient.resources) {
+        if (resource.type === 'Observation' && resource.subtype === 'ecg' && resource.filename) {
+          try {
+            const observation = await loadLocalObservation(resource.filename);
+            const ecgData = convertFhirToECGData(observation);
+            if (ecgData.length > 0) {
+              patientEcgs.push(...ecgData);
+            }
+          } catch (error) {
+            console.error(`Failed to load local resource ${resource.filename}:`, error);
+          }
+
+          if (resource.annotationsFilename) {
+            try {
+              const annotationObservation = await loadLocalObservation(resource.annotationsFilename);
+              const annotations = convertFhirToAnnotations(annotationObservation);
+              if (annotations.length > 0) {
+                patientAnnotations = annotations;
+              }
+            } catch (error) {
+              console.error(`Failed to load local annotations ${resource.annotationsFilename}:`, error);
+            }
+          }
+        }
+      }
+
+      if (patientEcgs.length > 0) {
+        localPatients.push({
+          nome: patient.name || `Local Patient ${patient.id}`,
+          ecgs: patientEcgs,
+          marcacoes: patientAnnotations,
+        });
+      }
+    }
+
+    return localPatients;
+  } catch (error) {
+    console.error('Failed to load local patients:', error);
+    return [];
+  }
+}
+
+async function loadRemotePatients(): Promise<Paciente[]> {
   try {
     const serverData = sessionStorage.getItem('selectedFhirServer');
     if (!serverData) {
@@ -41,6 +112,7 @@ async function loadPatientsFromConfig(): Promise<Paciente[]> {
 
     for (const patient of serverResources.patients) {
       const patientEcgs: ECGData[] = [];
+      let patientAnnotations: Marcacoes[] | undefined = undefined;
 
       for (const resource of patient.resources) {
         if (resource.type === 'Observation' && resource.subtype === 'ecg') {
@@ -51,6 +123,17 @@ async function loadPatientsFromConfig(): Promise<Paciente[]> {
             }
           } catch (error) {
             console.error(`Failed to load resource ${resource.id}:`, error);
+          }
+
+          if (resource.annotationsId) {
+            try {
+              const annotations = await getAnnotations(resource.annotationsId);
+              if (annotations && annotations.length > 0) {
+                patientAnnotations = annotations;
+              }
+            } catch (error) {
+              console.error(`Failed to load annotations ${resource.annotationsId}:`, error);
+            }
           }
         }
       }
@@ -68,6 +151,7 @@ async function loadPatientsFromConfig(): Promise<Paciente[]> {
         configPatients.push({
           nome: patientName,
           ecgs: patientEcgs,
+          marcacoes: patientAnnotations,
         });
       }
     }
@@ -79,30 +163,6 @@ async function loadPatientsFromConfig(): Promise<Paciente[]> {
   }
 }
 
-function buildBasePatients(
-  leads: string[],
-  valuesByLead: Record<string, number[]>,
-  fhirEcgData: ECGData[] | null = null
-): Paciente[] {
-  const csvEcgs: ECGData[] = [];
-
-  for (const leadName of leads) {
-    const scaledValues = valuesByLead[leadName].map(
-      (value) => value * 0.005
-    );
-    csvEcgs.push({
-      ecgDerivacao: leadName,
-      periodSec: 1 / 360,
-      valores: scaledValues,
-    });
-  }
-
-  return [
-    { nome: "Adriano Paulichi", ecgs: csvEcgs },
-    { nome: "Fábio Itturriet", ecgs: csvEcgs },
-    { nome: "Vinicius Coradassi", ecgs: fhirEcgData || csvEcgs },
-  ];
-}
 
 function extractPatientName(fhirPatient: Patient, patientId: string): string {
   if (fhirPatient.name && fhirPatient.name.length > 0) {
@@ -160,26 +220,64 @@ async function getECGData(observationId: string): Promise<ECGData[]> {
   }
 }
 
-async function loadAllPatients(
-  leads: string[],
-  valuesByLead: Record<string, number[]>,
-  fhirEcgData: ECGData[] | null = null
-): Promise<Paciente[]> {
-  const basePatients = buildBasePatients(
-    leads,
-    valuesByLead,
-    fhirEcgData
-  );
+function convertFhirToAnnotations(observation: Observation): Marcacoes[] {
+  if (!observation.component) return [];
 
-  const additionalPatients = await loadPatientsFromConfig();
+  const annotations: Marcacoes[] = [];
 
-  return [...basePatients, ...additionalPatients];
+  observation.component.forEach((comp) => {
+    const coding = comp.code?.coding?.[0];
+    const annotationType = coding?.code || 'N';
+    const sampledData = comp.valueSampledData;
+    
+    if (sampledData?.data) {
+      const sampleNumbers = sampledData.data
+        .trim()
+        .split(' ')
+        .map(s => parseInt(s.trim()))
+        .filter(n => !isNaN(n));
+      
+      sampleNumbers.forEach(sample => {
+        annotations.push({
+          sample: sample,
+          tipo: annotationType
+        });
+      });
+    }
+  });
+
+  return annotations.sort((a, b) => a.sample - b.sample);
+}
+
+async function getAnnotations(observationId: string): Promise<Marcacoes[]> {
+  try {
+    const observation = await fhirService.getObservation(observationId);
+    const annotations = convertFhirToAnnotations(observation);
+    
+    if (annotations.length === 0) {
+      throw new Error(`No annotations found in observation ${observationId}`);
+    }
+    
+    return annotations;
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Failed to load annotations for observation ${observationId}:`, error);
+    throw new Error(`Failed to fetch annotations: ${errorMsg}`);
+  }
+}
+
+async function loadAllPatients(): Promise<Paciente[]> {
+  const localPatients = await loadLocalPatients();
+  const remotePatients = await loadRemotePatients();
+
+  return [...localPatients, ...remotePatients];
 }
 
 export const patientService = {
-  loadPatientsFromConfig,
-  buildBasePatients,
+  loadLocalPatients,
+  loadRemotePatients,
   loadAllPatients,
   extractPatientName,
   getECGData,
+  getAnnotations,
 };

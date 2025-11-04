@@ -51,8 +51,16 @@ export default function DashboardEcgPage() {
   const isLocalRelayoutRef = useRef(false);
 
   useEffect(() => {
-    carregarArquivos();
+    loadPatients();
   }, []);
+
+  useEffect(() => {
+    if (pacienteSelecionado && pacienteSelecionado.marcacoes) {
+      setMarcacoes(pacienteSelecionado.marcacoes);
+    } else {
+      setMarcacoes([]);
+    }
+  }, [pacienteSelecionado]);
 
   useEffect(() => {
     if (
@@ -88,92 +96,21 @@ export default function DashboardEcgPage() {
   }, [tiposBatimentosSelecionados, marcacoes]);
 
   // ================= CARREGAMENTO =================
-  async function carregarArquivos() {
-    const { derivacoes, valoresPorDerivacao } = await carregarCSV(
-      "/ecg_completo.csv"
-    );
-    const marcacoes = await carregarMarcacoes("/200annotations.txt");
+  async function loadPatients() {
+    const pacientes = await patientService.loadAllPatients();
 
-    let fhirEcgData: ECGData[] | null = null;
-    try {
-      const observationId = "68e2b8588f0a1bdd34808a93";
-      console.log("Attempting to load FHIR data...");
-      fhirEcgData = await patientService.getECGData(observationId);
-
+    if (pacientes.length > 0) {
       toast.current?.show({
         severity: "success",
-        summary: "FHIR Data Loaded",
-        detail: "ECG data loaded from FHIR for Vinicius Coradassi",
-        life: 3000,
-      });
-    } catch (error) {
-      console.error("Failed to load FHIR data, using CSV fallback:", error);
-      toast.current?.show({
-        severity: "warn",
-        summary: "FHIR Load Failed",
-        detail: "Using CSV data for all patients",
-        life: 5000,
-      });
-    }
-
-    const pacientes = await patientService.loadAllPatients(
-      derivacoes,
-      valoresPorDerivacao,
-      fhirEcgData
-    );
-
-    if (pacientes.length > 3) {
-      toast.current?.show({
-        severity: "success",
-        summary: "Config Patients Loaded",
-        detail: `Loaded ${pacientes.length - 3} additional patient(s) from config`,
+        summary: "Patients Loaded",
+        detail: `Loaded ${pacientes.length} patient(s)`,
         life: 3000,
       });
     }
 
     setPacientes(pacientes);
-    setMarcacoes(marcacoes);
   }
 
-  async function carregarCSV(path: string) {
-    const resp = await fetch(path);
-    const texto = await resp.text();
-    const linhas = texto
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l !== "");
-    const cabecalho = linhas[0]
-      .split(",")
-      .map((h) => h.replace(/['"]/g, "").trim());
-    const derivacoes = cabecalho.slice(1);
-
-    const valoresPorDerivacao: Record<string, number[]> = {};
-    derivacoes.forEach((nome) => (valoresPorDerivacao[nome] = []));
-
-    for (let i = 1; i < linhas.length; i++) {
-      const partes = linhas[i].split(",").map((p) => p.trim());
-      if (partes.length !== cabecalho.length) continue;
-      derivacoes.forEach((nome, idx) => {
-        const valor = parseFloat(partes[idx + 1]);
-        if (!isNaN(valor)) valoresPorDerivacao[nome].push(valor);
-      });
-    }
-
-    return { derivacoes, valoresPorDerivacao };
-  }
-
-  async function carregarMarcacoes(path: string) {
-    const resp = await fetch(path);
-    const texto = await resp.text();
-    const linhas = texto
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l !== "" && !l.startsWith("Time"));
-    return linhas.map((l) => {
-      const partes = l.split(/\s+/);
-      return { sample: parseInt(partes[1]), tipo: partes[2] };
-    });
-  }
 
   function temMarcacoes(): boolean {
     return marcacoesSelecionadas.length > 0;
