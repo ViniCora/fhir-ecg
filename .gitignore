@@ -25,3 +25,5 @@ package-lock.json
 *.sw?
 
 tools/output/
+tools/input/
+tools/ecg_plot.html

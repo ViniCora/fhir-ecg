@@ -16,7 +16,7 @@ import type { ECGData } from "../../types/ECGData/ECGData";
 import ConfiguracaoLateral from "../../components/Configuracoes/ConfiguracaoLateral";
 import { coresPorTipo } from "../../types/TiposBatimentos/CoresPorTipo";
 import { Toast } from "primereact/toast";
-import { fhirService } from "../../services/fhirService";
+import { patientService } from "../../services/patientService";
 import type { Marcacoes } from "../../types/Marcacoes/Marcacoes";
 import ECGRangeSlider from "../../components/ECGRangeSlider/ECGRangeSlider";
 
@@ -26,7 +26,7 @@ export default function DashboardEcgPage() {
   const [visivelEsquerda, setVisivelEsquerda] = useState(false);
   const [mostrarLinha, setMostrarLinha] = useState(false);
   const [mostrarLinhaGrafico, setMostrarLinhaGrafico] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente>({});
+  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente>({} as Paciente);
   const [ecgsSelecionados, setEcgsSelecionados] = useState<ECGData[] | null>(
     null
   );
@@ -97,7 +97,9 @@ export default function DashboardEcgPage() {
     let fhirEcgData: ECGData[] | null = null;
     try {
       const observationId = "68e2b8588f0a1bdd34808a93";
-      fhirEcgData = await fhirService.getECGData(observationId);
+      console.log("Attempting to load FHIR data...");
+      fhirEcgData = await patientService.getECGData(observationId);
+
       toast.current?.show({
         severity: "success",
         summary: "FHIR Data Loaded",
@@ -114,11 +116,21 @@ export default function DashboardEcgPage() {
       });
     }
 
-    const pacientes = montarPacientes(
+    const pacientes = await patientService.loadAllPatients(
       derivacoes,
       valoresPorDerivacao,
       fhirEcgData
     );
+
+    if (pacientes.length > 3) {
+      toast.current?.show({
+        severity: "success",
+        summary: "Config Patients Loaded",
+        detail: `Loaded ${pacientes.length - 3} additional patient(s) from config`,
+        life: 3000,
+      });
+    }
+
     setPacientes(pacientes);
     setMarcacoes(marcacoes);
   }
@@ -165,28 +177,6 @@ export default function DashboardEcgPage() {
 
   function temMarcacoes(): boolean {
     return marcacoesSelecionadas.length > 0;
-  }
-
-  function montarPacientes(
-    derivacoes: string[],
-    valoresPorDerivacao: Record<string, number[]>,
-    fhirEcgData: ECGData[] | null = null
-  ) {
-    const csvEcgs: ECGData[] = [];
-    for (const nome of derivacoes) {
-      const scaledValues = valoresPorDerivacao[nome].map((v) => v * 0.005);
-      csvEcgs.push({
-        ecgDerivacao: nome,
-        periodSec: 1 / 360,
-        valores: scaledValues,
-      });
-    }
-
-    return [
-      { nome: "Adriano Paulichi", ecgs: csvEcgs },
-      { nome: "Fábio Itturriet", ecgs: csvEcgs },
-      { nome: "Vinicius Coradassi", ecgs: fhirEcgData || csvEcgs },
-    ];
   }
 
   // ================= DADOS VISÍVEIS (1 MINUTO) =================
@@ -570,7 +560,7 @@ export default function DashboardEcgPage() {
           tiposBatimentosSelecionados={tiposBatimentosSelecionados}
           temMarcacoes={temMarcacoes()}
           irParaProximoPonto={irParaProximoPonto}
-          irParaPontoAnterior={irParaProximoPonto}
+          irParaPontoAnterior={irParaPontoAnterior}
           marcacoes={marcacoes}
           mostrarSlider={mostrarSlider}
           setMostrarSlider={setMostrarSlider}

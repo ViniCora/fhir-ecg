@@ -1,0 +1,49 @@
+{
+  "hapi-fhir": {
+    "patients": [
+      {
+        "id": "51054630",
+        "resources": [
+          {
+            "id": "51055766",
+            "type": "Observation",
+            "subtype": "ecg",
+            "annotationsId": "51055769"
+          }
+        ]
+      }
+    ]
+  },
+  "neofass": {
+    "patients": [
+      {
+        "id": "68f7fbdd5c278d096cebeee6",
+        "resources": [
+          {
+            "id": "69093320477e8b7b1fdd462d",
+            "type": "Observation",
+            "subtype": "ecg",
+            "annotationsId": "69093325477e8b7b1fdd467d"
+          }
+        ]
+      }
+    ]
+  },
+  "local": {
+    "patients": [
+      {
+        "id": "local_1",
+        "name": "Vinicius da Silva",
+        "resources": [
+          {
+            "id": "mitdb_100",
+            "type": "Observation",
+            "subtype": "ecg",
+            "filename": "100_fhir.json",
+            "annotationsFilename": "100_annotations_fhir.json"
+          }
+        ]
+      }
+    ]
+  }
+}

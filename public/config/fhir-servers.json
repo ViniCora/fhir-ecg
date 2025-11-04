@@ -1,0 +1,18 @@
+{
+  "endpoints": [
+    {
+      "id": "hapi-fhir",
+      "name": "HAPI FHIR",
+      "endpoint": "http://hapi.fhir.org/baseR4",
+      "requiresAuth": false
+    },
+    {
+      "id": "neofass",
+      "name": "neoFASS-ECG",
+      "endpoint": "https://if4health.charqueadas.ifsul.edu.br/biofass",
+      "requiresAuth": true,
+      "clientId": "adriano-utfpr",
+      "scope": "openid fhirUser user/*.crudsh"
+    }
+  ]
+}

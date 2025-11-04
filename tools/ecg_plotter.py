@@ -69,7 +69,7 @@ def plot_ecg_data(fhir_data):
     return fig
 
 def main():
-    file_path = 'input/Observation-ECGSampleArrayObservation.json'
+    file_path = 'output/100_fhir.json'
     
     try:
         fhir_data = load_ecg_data(file_path)

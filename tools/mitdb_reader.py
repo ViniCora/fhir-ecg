@@ -4,11 +4,12 @@ import json
 import os
 from datetime import datetime, timedelta
 
-USE_REMOTE = True
-RECORD_NAME = "105"
+USE_REMOTE = False
+RECORD_NAME = "100"
 PHYSIONET_DB = "mitdb"
 SHOW_SAMPLE_COUNT = 10
 
+# PATIENT_ID = "Patient/51054630"
 PATIENT_ID = "Patient/68f7fbdd5c278d096cebeee6"
 OUTPUT_DIR = "output"
 SAMPLE_START = 0
@@ -120,7 +121,9 @@ def create_fhir_annotations(annotation, record, patient_id, timestamp=None, samp
                     "display": ann_info["display"]
                 }]
             },
-            "valueString": sample_string
+            "valueSampledData": {
+                "data": sample_string
+            }
         }
         
         components.append(component)
@@ -166,6 +169,7 @@ def create_fhir_observation(record, patient_id, timestamp=None, sample_start=0, 
     
     observation = {
         "resourceType": "Observation",
+        "status": "final",
         "code": {
             "coding": [{
                 "system": "urn:iso:std:iso:11073:10101",

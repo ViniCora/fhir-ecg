@@ -7,7 +7,8 @@ import { Column } from 'primereact/column';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { Tag } from 'primereact/tag';
-import { fhirService, type Observation } from '../../services/fhirService';
+import { fhirService } from '../../services/fhirService';
+import type { Observation } from 'fhir/r4';
 
 interface FhirObservationViewerProps {
   observationId: string;
