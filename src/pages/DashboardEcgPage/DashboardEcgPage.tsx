@@ -156,6 +156,18 @@ export default function DashboardEcgPage() {
     setDadosVisiveis(novosDados);
   }, [ecgsSelecionados, minutoAtual, verGraficoInteiro]);
 
+  useEffect(() => {
+    if (!verGraficoInteiro && dadosVisiveis) {
+      setLayoutSync((prev) => ({
+        ...prev,
+        xaxis: {
+          ...(prev.xaxis ?? {}),
+          range: [0, 10],
+        },
+      }));
+    }
+  }, [verGraficoInteiro, minutoAtual]);
+
   //==================================================//
 
   function handleHover(data: PlotHoverEvent) {
@@ -316,30 +328,36 @@ export default function DashboardEcgPage() {
     if (!temMarcacoes() || !ecgsSelecionados) return;
 
     const periodSec = ecgsSelecionados[0].periodSec;
-    const rangeRaw = layoutSync.xaxis?.range;
+    const offset = verGraficoInteiro ? 0 : minutoAtual * 60;
+    const cursor = typeof cursorX === "number" ? cursorX : 0;
+    const cursorAbs = cursor + offset;
 
-    let cursor = cursorX as number | null;
+    const marcacoesNoIntervalo = verGraficoInteiro
+      ? marcacoesSelecionadas
+      : marcacoesSelecionadas.filter(
+          (m) =>
+            m.sample * periodSec >= offset && m.sample * periodSec < offset + 60
+        );
 
-    const range =
-      rangeRaw && rangeRaw.length === 2
-        ? ([Number(rangeRaw[0]), Number(rangeRaw[1])] as [number, number])
-        : null;
+    if (marcacoesNoIntervalo.length === 0) return;
 
-    if (
-      range &&
-      (typeof cursor !== "number" || cursor < range[0] || cursor > range[1])
-    ) {
-      cursor = (range[0] + range[1]) / 2;
-    }
-
-    const proximo = marcacoesSelecionadas
+    const proximo = marcacoesNoIntervalo
       .map((m) => m.sample)
-      .find((s) => s * periodSec > (cursor ?? -Infinity));
+      .find((s) => s * periodSec > cursorAbs);
 
     if (proximo !== undefined) {
+      const posRelativa = verGraficoInteiro
+        ? proximo * periodSec
+        : proximo * periodSec - offset;
       centralizarNoPonto(proximo, periodSec);
+      setCursorX(posRelativa);
     } else {
-      centralizarNoPonto(marcacoesSelecionadas[0].sample, periodSec);
+      const primeiro = marcacoesNoIntervalo[0];
+      const posRelativa = verGraficoInteiro
+        ? primeiro.sample * periodSec
+        : primeiro.sample * periodSec - offset;
+      centralizarNoPonto(primeiro.sample, periodSec);
+      setCursorX(posRelativa);
     }
   }
 
@@ -347,31 +365,37 @@ export default function DashboardEcgPage() {
     if (!temMarcacoes() || !ecgsSelecionados) return;
 
     const periodSec = ecgsSelecionados[0].periodSec;
-    const rangeRaw = layoutSync.xaxis?.range;
+    const offset = verGraficoInteiro ? 0 : minutoAtual * 60;
+    const cursor = typeof cursorX === "number" ? cursorX : 0;
+    const cursorAbs = cursor + offset;
 
-    let cursor = cursorX as number | null;
+    const marcacoesNoIntervalo = verGraficoInteiro
+      ? marcacoesSelecionadas
+      : marcacoesSelecionadas.filter(
+          (m) =>
+            m.sample * periodSec >= offset && m.sample * periodSec < offset + 60
+        );
 
-    const range =
-      rangeRaw && rangeRaw.length === 2
-        ? ([Number(rangeRaw[0]), Number(rangeRaw[1])] as [number, number])
-        : null;
+    if (marcacoesNoIntervalo.length === 0) return;
 
-    if (
-      range &&
-      (typeof cursor !== "number" || cursor < range[0] || cursor > range[1])
-    ) {
-      cursor = (range[0] + range[1]) / 2;
-    }
-
-    const anteriores = marcacoesSelecionadas
+    const anteriores = marcacoesNoIntervalo
       .map((m) => m.sample)
-      .filter((s) => s * periodSec < (cursor ?? Infinity));
+      .filter((s) => s * periodSec < cursorAbs);
 
     if (anteriores.length > 0) {
-      centralizarNoPonto(anteriores[anteriores.length - 1], periodSec);
+      const anterior = anteriores[anteriores.length - 1];
+      const posRelativa = verGraficoInteiro
+        ? anterior * periodSec
+        : anterior * periodSec - offset;
+      centralizarNoPonto(anterior, periodSec);
+      setCursorX(posRelativa);
     } else {
-      const ultimo = marcacoesSelecionadas[marcacoesSelecionadas.length - 1];
+      const ultimo = marcacoesNoIntervalo[marcacoesNoIntervalo.length - 1];
+      const posRelativa = verGraficoInteiro
+        ? ultimo.sample * periodSec
+        : ultimo.sample * periodSec - offset;
       centralizarNoPonto(ultimo.sample, periodSec);
+      setCursorX(posRelativa);
     }
   }
 
@@ -471,6 +495,16 @@ export default function DashboardEcgPage() {
     const duracao = dado.valores.length * dado.periodSec;
     const offset = dado.tempoInicial ?? minutoAtual * 60;
 
+    const startSample = Math.floor(offset / dado.periodSec);
+    const endSample = startSample + dado.valores.length;
+
+    const marcacoesParaPlot = marcacoesSelecionadas
+      .filter((m) => m.sample >= startSample && m.sample < endSample)
+      .map((m) => ({
+        sample: m.sample - startSample,
+        tipo: m.tipo,
+      }));
+
     const { shapes, annotations } = gerarRetangulos(
       marcacoesSelecionadas,
       todasMarcacoesArray,
@@ -481,12 +515,13 @@ export default function DashboardEcgPage() {
 
     const { shapes: linhasTempo, annotations: anotacoesTempo } =
       gerarLinhasTemporais(duracao, offset);
+
     return {
       title: dado.ecgDerivacao,
       content: (
         <ECGPlot
           key={dado.ecgDerivacao}
-          ecgData={dado} // agora só 1 minuto!
+          ecgData={dado}
           layoutSync={layoutSync}
           cursorX={cursorX}
           onRelayout={handleRelayout}
@@ -499,7 +534,7 @@ export default function DashboardEcgPage() {
             ...annotations,
             ...anotacoesTempo,
           ]}
-          marcacoes={marcacoesSelecionadas}
+          marcacoes={marcacoesParaPlot}
         />
       ),
     };

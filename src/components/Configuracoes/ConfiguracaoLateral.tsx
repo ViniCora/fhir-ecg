@@ -68,7 +68,7 @@ const ConteudoSidebar = React.memo(
   >) => {
     const recordingOptions = useMemo(() => {
       if (!pacienteSelecionado) return [];
-      
+
       return pacienteSelecionado.recordings.map((recording) => {
         const date = new Date(recording.date);
         const formattedDate = date.toLocaleString("pt-BR", {
@@ -211,7 +211,10 @@ const ConteudoSidebar = React.memo(
             <InputSwitch
               inputId="switchVerGrafico"
               checked={verGraficoInteiro}
-              onChange={(e) => onVerGraficoInteiroChange(e.value)}
+              onChange={(e) => {
+                onVerGraficoInteiroChange(e.value);
+                onMinutoChange(0);
+              }}
             />
           </div>
 
