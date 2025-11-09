@@ -85,13 +85,24 @@ const ConteudoSidebar = React.memo(
       });
     }, [pacienteSelecionado]);
 
-    const tiposBatimentosOptions = Object.entries(tiposBatimentos).map(
-      ([key, value]) => ({
-        label: value,
-        value: key,
-        cor: coresPorTipo[key],
-      })
-    );
+    const tiposBatimentosOptions = useMemo(() => {
+      const allOptions = Object.entries(tiposBatimentos).map(
+        ([key, value]) => ({
+          label: value,
+          value: key,
+          cor: coresPorTipo[key],
+        })
+      );
+
+      if (!recordingSelecionado?.annotations) {
+        return [];
+      }
+
+      const availableTypes = Object.keys(recordingSelecionado.annotations);
+      return allOptions.filter((option) =>
+        availableTypes.includes(option.value)
+      );
+    }, [recordingSelecionado]);
 
     const optionTemplate = (option: any) => {
       if (!option) return <span />;
