@@ -117,6 +117,10 @@ const ConteudoSidebar = React.memo(
               display: "inline-block",
             }}
           />
+          <span style={{ fontWeight: "bold", minWidth: "10px" }}>
+            {option.value}
+          </span>
+          <span>-</span>
           <span>{option.label}</span>
         </div>
       );

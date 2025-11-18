@@ -423,7 +423,7 @@ export default function DashboardEcgPage() {
       });
       annotations.push({
         x: t - 0.15,
-        y: 0.95,
+        y: 0.9,
         xref: "x",
         yref: "paper",
         text: formatarTempo(tempoReal),
