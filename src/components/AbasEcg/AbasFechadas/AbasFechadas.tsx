@@ -90,6 +90,17 @@ export default function AbasFechadas({
         />
       </div>
 
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+        <Button
+          icon="pi pi-home"
+          rounded
+          outlined
+          tooltip="Voltar ao início"
+          className="button-dock-closed"
+          onClick={() => window.location.href = '/home'}
+        />
+      </div>
+
       <div className="dock-closed-tabs">
         {closedTabs.map((i) => (
           <div key={i} className="dock-closed-tab" onClick={() => toggleTab(i)}>

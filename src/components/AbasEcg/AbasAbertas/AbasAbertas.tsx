@@ -21,11 +21,11 @@ export default function AbasAbertas({
         <div className="dock-empty-content">
           <div className="dock-empty-header">
             <img
-              src="./src/assets/fhir.webp"
-              alt="Pulse-Fhir logo"
+              src="./src/assets/pulse-fhir.png"
+              alt="PULSE-FHIR logo"
               className="dock-empty-logo"
             />
-            <h1 className="dock-empty-app-title">Pulse-Fhir</h1>
+            <h1 className="dock-empty-app-title">PULSE-FHIR</h1>
           </div>
 
           <h2 className="dock-empty-title">

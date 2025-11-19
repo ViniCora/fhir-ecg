@@ -118,8 +118,8 @@ export default function DashboardEcgPage() {
     if (pacientes.length > 0) {
       toast.current?.show({
         severity: "success",
-        summary: "Patients Loaded",
-        detail: `Loaded ${pacientes.length} patient(s)`,
+        summary: "Pacientes Carregados",
+        detail: `${pacientes.length} paciente(s)`,
         life: 3000,
       });
     }
