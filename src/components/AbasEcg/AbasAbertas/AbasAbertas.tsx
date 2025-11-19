@@ -22,10 +22,10 @@ export default function AbasAbertas({
           <div className="dock-empty-header">
             <img
               src="./src/assets/fhir.webp"
-              alt="FHIR-Beat logo"
+              alt="Pulse-Fhir logo"
               className="dock-empty-logo"
             />
-            <h1 className="dock-empty-app-title">FHIR-Beat</h1>
+            <h1 className="dock-empty-app-title">Pulse-Fhir</h1>
           </div>
 
           <h2 className="dock-empty-title">
