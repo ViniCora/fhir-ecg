@@ -112,20 +112,12 @@ export default function AuthPage() {
     paddingBottom: '16px',
   };
 
-  const headerTopStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '12px',
-    marginBottom: '8px',
-  };
-
   const logoStyle: React.CSSProperties = {
-    width: '42px',
-    height: '42px',
-    borderRadius: '50%',
-    objectFit: 'cover',
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)',
+    width: '120px',
+    height: 'auto',
+    objectFit: 'contain',
+    marginBottom: '16px',
+    filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1))',
   };
 
   const appTitleStyle: React.CSSProperties = {
@@ -215,10 +207,8 @@ export default function AuthPage() {
       <div style={pageContainerStyle}>
         <div style={contentBoxStyle}>
           <div style={headerStyle}>
-            <div style={headerTopStyle}>
-              <img src={fhirLogo} alt="FHIR Logo" style={logoStyle} />
-              <h1 style={appTitleStyle}>PULSE-FHIR</h1>
-            </div>
+            <img src={fhirLogo} alt="FHIR Logo" style={logoStyle} />
+            <h1 style={appTitleStyle}>PULSE-FHIR</h1>
             <p style={platformSubtitleStyle}>Plataforma Unificada de Leituras de Sinais ECG em FHIR</p>
           </div>
           <p style={loadingTextStyle}>Autenticando...</p>
@@ -232,10 +222,8 @@ export default function AuthPage() {
       <div style={pageContainerStyle}>
         <div style={contentBoxStyle}>
           <div style={headerStyle}>
-            <div style={headerTopStyle}>
-              <img src={fhirLogo} alt="FHIR Logo" style={logoStyle} />
-              <h1 style={appTitleStyle}>PULSE-FHIR</h1>
-            </div>
+            <img src={fhirLogo} alt="FHIR Logo" style={logoStyle} />
+            <h1 style={appTitleStyle}>PULSE-FHIR</h1>
             <p style={platformSubtitleStyle}>Plataforma Unificada de Leituras de Sinais ECG em FHIR</p>
           </div>
           
@@ -302,10 +290,8 @@ export default function AuthPage() {
     <div style={pageContainerStyle}>
       <div style={contentBoxStyle}>
         <div style={headerStyle}>
-          <div style={headerTopStyle}>
-            <img src={fhirLogo} alt="FHIR Logo" style={logoStyle} />
-            <h1 style={appTitleStyle}>PULSE-FHIR</h1>
-          </div>
+          <img src={fhirLogo} alt="FHIR Logo" style={logoStyle} />
+          <h1 style={appTitleStyle}>PULSE-FHIR</h1>
           <p style={platformSubtitleStyle}>Plataforma Unificada de Leituras de Sinais ECG em FHIR</p>
         </div>
         
