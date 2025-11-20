@@ -215,7 +215,8 @@ function convertFhirToECGData(observation: Observation): ECGData[] {
     const periodSec = periodMs / 1000;
     
     const factor = sampledData?.factor || 1;
-    const scaledValues = dataPoints.map(value => value * factor);
+    const origin = sampledData?.origin.value || 0;
+    const scaledValues = dataPoints.map(value => (value * factor) + origin);
     
     return {
       ecgDerivacao: coding?.display || coding?.code || `Component ${comp.code?.coding?.[0]?.code || 'Unknown'}`,
