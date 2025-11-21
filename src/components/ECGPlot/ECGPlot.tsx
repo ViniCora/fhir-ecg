@@ -117,16 +117,20 @@ export default function ECGPlot({
   const marcacoesData: Partial<PlotData>[] = marcacoes
     ? marcacoes
         .filter((m) => m.sample < ecgData.valores.length)
-        .map((m) => ({
-          x: [m.sample * ecgData.periodSec],
-          y: [ecgData.valores[m.sample]],
-          type: "scatter",
-          mode: "markers",
-          marker: { color: coresPorTipo[m.tipo] || "black", size: 10 },
-          name: m.tipo,
-          text: [`${m.tipo} (${m.sample})`],
-          hoverinfo: "text",
-        }))
+        .map((m) => {
+          const xCoord = m.sample * ecgData.periodSec;
+          const yCoord = ecgData.valores[m.sample];
+          return {
+            x: [xCoord],
+            y: [yCoord],
+            type: "scatter",
+            mode: "markers",
+            marker: { color: coresPorTipo[m.tipo] || "black", size: 10 },
+            name: m.tipo,
+            text: [`${m.tipo} (${xCoord.toFixed(3)}, ${yCoord.toFixed(3)})`],
+            hoverinfo: "text",
+          };
+        })
     : [];
 
   const plotData: Partial<PlotData>[] = [
