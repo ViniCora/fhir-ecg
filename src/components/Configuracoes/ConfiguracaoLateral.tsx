@@ -247,7 +247,7 @@ const ConteudoSidebar = React.memo(
             </FloatLabel>
           )}
 
-          <div style={{ display: "flex", alignItems: "center" }}>
+          {/* <div style={{ display: "flex", alignItems: "center" }}>
             <label htmlFor="switch1" style={{ paddingRight: "15px" }}>
               Mostrar Linha na Tela?
             </label>
@@ -267,7 +267,7 @@ const ConteudoSidebar = React.memo(
               checked={mostrarLinhaGrafico}
               onChange={(e) => setMostrarLinhaGrafico(e.value)}
             />
-          </div>
+          </div> */}
         </div>
       </>
     );

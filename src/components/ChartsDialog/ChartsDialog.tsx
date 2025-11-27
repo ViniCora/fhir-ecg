@@ -48,7 +48,7 @@ export default function ChartsDialog({
         color: "#000",
         font: {
           weight: "bold" as const,
-          size: 14,
+          size: 24,
         },
         formatter: (value: number, context: any) => {
           const simbolo = context.chart.data.labels[
@@ -66,6 +66,10 @@ export default function ChartsDialog({
             const simbolo = labels[index] as keyof typeof tiposBatimentos;
             const nome = tiposBatimentos[simbolo] ?? "";
             return `${nome}`;
+          },
+          font: {
+            weight: "bold" as const,
+            size: 18,
           },
         },
       },
@@ -90,9 +94,9 @@ export default function ChartsDialog({
         type="bar"
         data={data}
         options={options}
-        plugins={[ChartDataLabels]} // registra o plugin
-        width="500px"
-        height="400px"
+        plugins={[ChartDataLabels]}
+        width="750px"
+        height="600px"
       />
     </Dialog>
   );
